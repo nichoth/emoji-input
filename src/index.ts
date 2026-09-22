@@ -23,17 +23,24 @@
  * via `el.emojis = [{ emoji: '🍕', name: 'pizza', keywords: ['food'] }]`.
  */
 
-export interface EmojiEntry {
-    emoji:string;
-    name:string;        // shortcode, snake_case
-    keywords?:string[];
-}
+import {
+    DEFAULT_EMOJIS,
+    type EmojiEntry,
+} from './data.js'
+import { search } from './search.js'
 
-export interface EmojiSelectDetail {
+export { EmojiPicker } from './picker.js'
+export { EmojiButton } from './button.js'
+
+export {
+    DEFAULT_EMOJIS,
+    type EmojiEntry,
+} from './data.js'
+
+export type EmojiSelectDetail = {
     emoji:EmojiEntry;
     query:string;
 }
-
 type Field = HTMLTextAreaElement|HTMLInputElement
 
 const TRIGGER = /:([a-z0-9_+-]*)$/i
@@ -94,436 +101,6 @@ function caretRect (field:Field, pos:number):CaretRect {
     }
     mirror.remove()
     return out
-}
-
-// ---------------------------------------------------------------------
-// Default data — a starter set. Swap in a full dataset via `.emojis`.
-// ---------------------------------------------------------------------
-
-function parse (src:string):EmojiEntry[] {
-    return src.trim().split('\n').map(line => {
-        const [emoji, name, kw] = line.split('|')
-        return { emoji, name, keywords:kw ? kw.split(' ') : [] }
-    })
-}
-
-export const DEFAULT_EMOJIS:EmojiEntry[] = parse(`
-😀|grinning|smile happy
-😃|smiley|smile happy
-😄|smile|happy laugh
-😁|grin|happy
-😆|laughing|lol haha
-😅|sweat_smile|nervous
-🤣|rofl|laugh lol
-😂|joy|laugh cry tears
-🙂|slightly_smiling_face|smile
-🙃|upside_down_face|silly
-😉|wink|flirt
-😊|blush|happy shy
-😇|innocent|angel halo
-🥰|smiling_face_with_hearts|love
-😍|heart_eyes|love crush
-🤩|star_struck|wow
-😘|kissing_heart|kiss love
-😋|yum|tasty food
-😛|stuck_out_tongue|tongue
-😜|stuck_out_tongue_winking_eye|silly
-🤪|zany_face|crazy
-🤔|thinking|hmm think
-🤨|raised_eyebrow|suspicious
-😐|neutral_face|meh
-😑|expressionless|blank
-😶|no_mouth|silent
-🙄|roll_eyes|eyeroll
-😏|smirk|smug
-😬|grimacing|awkward
-🤥|lying_face|pinocchio
-😌|relieved|calm
-😔|pensive|sad
-😪|sleepy|tired
-🤤|drooling_face|drool
-😴|sleeping|zzz sleep
-😷|mask|sick
-🤒|face_with_thermometer|sick
-🤕|face_with_head_bandage|hurt
-🤢|nauseated_face|sick
-🤮|vomiting_face|puke
-🥵|hot_face|heat
-🥶|cold_face|freezing
-🥴|woozy_face|drunk
-😵|dizzy_face|dizzy
-🤯|exploding_head|mind blown
-🤠|cowboy_hat_face|cowboy
-🥳|partying_face|party celebrate
-😎|sunglasses|cool
-🤓|nerd_face|glasses
-🧐|monocle_face|inspect
-😕|confused|puzzled
-😟|worried|concerned
-🙁|slightly_frowning_face|sad
-😮|open_mouth|surprised
-😯|hushed|surprised
-😲|astonished|shocked
-😳|flushed|embarrassed
-🥺|pleading_face|puppy eyes
-😢|cry|sad tear
-😭|sob|cry sad
-😱|scream|fear
-😖|confounded|frustrated
-😣|persevere|struggle
-😞|disappointed|sad
-😓|sweat|nervous
-😩|weary|tired
-😤|triumph|huff angry
-😡|rage|angry mad
-😠|angry|mad
-🤬|face_with_symbols_on_mouth|swearing
-💀|skull|dead
-☠️|skull_and_crossbones|danger
-💩|poop|poo
-🤡|clown_face|clown
-👻|ghost|boo spooky
-👽|alien|ufo
-🤖|robot|bot
-😺|smiley_cat|cat
-🙈|see_no_evil|monkey
-🙉|hear_no_evil|monkey
-🙊|speak_no_evil|monkey
-💋|kiss|lips
-❤️|heart|love red
-🧡|orange_heart|love
-💛|yellow_heart|love
-💚|green_heart|love
-💙|blue_heart|love
-💜|purple_heart|love
-🖤|black_heart|love
-🤍|white_heart|love
-💔|broken_heart|sad
-💕|two_hearts|love
-💖|sparkling_heart|love
-💯|100|hundred perfect
-💢|anger|angry
-💥|boom|explosion collision
-💫|dizzy|star
-💦|sweat_drops|water
-💨|dash|wind fast
-🕳️|hole|
-💬|speech_balloon|chat
-💤|zzz|sleep
-👋|wave|hello bye
-🤚|raised_back_of_hand|stop
-✋|hand|stop high five
-🖖|vulcan_salute|spock
-👌|ok_hand|okay
-🤌|pinched_fingers|italian
-✌️|v|peace victory
-🤞|crossed_fingers|luck
-🤟|love_you_gesture|rock
-🤘|metal|rock horns
-🤙|call_me_hand|shaka
-👈|point_left|
-👉|point_right|
-👆|point_up_2|
-👇|point_down|
-☝️|point_up|
-👍|thumbsup|+1 yes like
-👎|thumbsdown|-1 no dislike
-✊|fist|power
-👊|punch|fist bump
-🤛|fist_left|
-🤜|fist_right|
-👏|clap|applause
-🙌|raised_hands|hooray praise
-🤝|handshake|deal
-🙏|pray|please thanks
-💪|muscle|strong flex
-🧠|brain|smart
-👀|eyes|look
-👁️|eye|look
-🫀|anatomical_heart|
-🗣️|speaking_head|talk
-👤|bust_in_silhouette|user
-👥|busts_in_silhouette|users group
-🐶|dog|puppy
-🐱|cat|kitty
-🐭|mouse|
-🐹|hamster|
-🐰|rabbit|bunny
-🦊|fox_face|
-🐻|bear|
-🐼|panda_face|
-🐨|koala|
-🐯|tiger|
-🦁|lion|
-🐮|cow|
-🐷|pig|
-🐸|frog|
-🐵|monkey_face|
-🐔|chicken|
-🐧|penguin|
-🐦|bird|
-🦆|duck|
-🦉|owl|
-🦄|unicorn|
-🐝|bee|honeybee
-🐛|bug|insect
-🦋|butterfly|
-🐌|snail|slow
-🐢|turtle|slow
-🐍|snake|python
-🐙|octopus|
-🦀|crab|rust
-🐳|whale|
-🐬|dolphin|
-🐟|fish|
-🦈|shark|
-🐊|crocodile|
-🐘|elephant|
-🦒|giraffe|
-🐉|dragon|
-🌵|cactus|
-🎄|christmas_tree|xmas
-🌲|evergreen_tree|
-🌴|palm_tree|
-🌱|seedling|plant sprout
-🍀|four_leaf_clover|luck
-🍁|maple_leaf|canada
-🌸|cherry_blossom|flower
-🌹|rose|flower
-🌻|sunflower|flower
-🌈|rainbow|pride
-☀️|sunny|sun
-🌙|crescent_moon|night
-⭐|star|
-🌟|star2|glowing
-✨|sparkles|shiny magic
-⚡|zap|lightning electric
-🔥|fire|lit hot
-💧|droplet|water
-🌊|ocean|wave
-❄️|snowflake|cold
-☁️|cloud|
-🌍|earth_africa|globe world
-🌎|earth_americas|globe world
-🍎|apple|fruit
-🍌|banana|fruit
-🍇|grapes|fruit
-🍓|strawberry|fruit
-🍉|watermelon|fruit
-🍋|lemon|fruit
-🍑|peach|fruit
-🍒|cherries|fruit
-🥑|avocado|
-🥕|carrot|
-🌽|corn|
-🌶️|hot_pepper|spicy
-🍞|bread|
-🧀|cheese|
-🍔|hamburger|burger
-🍟|fries|
-🍕|pizza|
-🌮|taco|
-🌯|burrito|
-🍣|sushi|
-🍜|ramen|noodles
-🍩|doughnut|donut
-🍪|cookie|
-🎂|birthday|cake
-🍰|cake|
-🍫|chocolate_bar|
-🍿|popcorn|
-☕|coffee|
-🍵|tea|
-🍺|beer|
-🍻|beers|cheers
-🍷|wine_glass|
-🥂|champagne|cheers
-🍸|cocktail|
-🧋|bubble_tea|boba
-🥤|cup_with_straw|soda
-⚽|soccer|football
-🏀|basketball|
-🏈|football|
-⚾|baseball|
-🎾|tennis|
-🏐|volleyball|
-🎱|8ball|billiards
-🏓|ping_pong|
-🏆|trophy|win
-🥇|first_place_medal|gold
-🎯|dart|bullseye target
-🎮|video_game|gaming controller
-🎲|game_die|dice
-🧩|jigsaw|puzzle
-🎨|art|paint palette
-🎬|clapper|movie film
-🎤|microphone|sing
-🎧|headphones|music
-🎵|musical_note|music
-🎶|notes|music
-🎸|guitar|
-🎹|musical_keyboard|piano
-🥁|drum|
-🚗|car|
-🚕|taxi|
-🚌|bus|
-🚓|police_car|
-🚑|ambulance|
-🚒|fire_engine|
-🚲|bike|bicycle
-🛴|scooter|
-🚀|rocket|launch ship
-✈️|airplane|flight
-🚁|helicopter|
-⛵|boat|sailboat
-🚂|steam_locomotive|train
-🏠|house|home
-🏢|office|building
-🏥|hospital|
-🏫|school|
-🏰|european_castle|castle
-⛺|tent|camping
-🗽|statue_of_liberty|nyc
-🗼|tokyo_tower|
-⌚|watch|
-📱|iphone|phone mobile
-💻|computer|laptop
-🖥️|desktop_computer|
-⌨️|keyboard|
-🖱️|computer_mouse|
-🖨️|printer|
-💾|floppy_disk|save
-💿|cd|
-📀|dvd|
-📷|camera|photo
-📹|video_camera|
-📺|tv|television
-📻|radio|
-🔋|battery|
-🔌|electric_plug|
-💡|bulb|idea light
-🔦|flashlight|
-🕯️|candle|
-🗑️|wastebasket|trash
-💰|moneybag|money cash
-💵|dollar|money
-💳|credit_card|
-💎|gem|diamond
-⚖️|balance_scale|justice
-🔧|wrench|tool fix
-🔨|hammer|tool
-🛠️|hammer_and_wrench|tools
-⚙️|gear|settings
-🔩|nut_and_bolt|
-🔗|link|chain url
-🔒|lock|locked secure
-🔓|unlock|unlocked
-🔑|key|
-🛡️|shield|security
-🧲|magnet|
-🧪|test_tube|science
-🧬|dna|
-🔬|microscope|
-🔭|telescope|
-📡|satellite|
-💊|pill|medicine
-🩹|adhesive_bandage|bandaid
-🧹|broom|clean
-🧼|soap|
-🛒|shopping_cart|
-📦|package|box shipping
-📫|mailbox|
-✉️|envelope|email mail
-📧|email|mail
-📝|memo|note pencil
-📄|page_facing_up|document
-📊|bar_chart|chart
-📈|chart_with_upwards_trend|growth up
-📉|chart_with_downwards_trend|down
-📋|clipboard|
-📌|pushpin|pin
-📍|round_pushpin|location
-📎|paperclip|
-✂️|scissors|cut
-📚|books|
-📖|book|read
-📰|newspaper|news
-🔖|bookmark|
-🗓️|spiral_calendar|
-📅|date|calendar
-⏰|alarm_clock|
-⏳|hourglass_flowing_sand|wait
-🔍|mag|search
-🔎|mag_right|search
-🏷️|label|tag
-✅|white_check_mark|done check yes
-❌|x|no wrong cross
-❓|question|
-❗|exclamation|
-⚠️|warning|caution
-🚫|no_entry_sign|forbidden
-♻️|recycle|
-✔️|heavy_check_mark|check
-➕|heavy_plus_sign|plus add
-➖|heavy_minus_sign|minus
-➡️|arrow_right|
-⬅️|arrow_left|
-⬆️|arrow_up|
-⬇️|arrow_down|
-🔄|arrows_counterclockwise|refresh
-🔁|repeat|loop
-▶️|arrow_forward|play
-⏸️|pause_button|pause
-⏹️|stop_button|stop
-🔀|twisted_rightwards_arrows|shuffle
-🔔|bell|notification
-🔕|no_bell|mute
-🏳️|white_flag|surrender
-🏁|checkered_flag|finish race
-🚩|triangular_flag_on_post|red flag
-🎉|tada|party celebrate congrats
-🎊|confetti_ball|party
-🎈|balloon|party
-🎁|gift|present
-🎀|ribbon|bow
-🏅|medal_sports|
-🧨|firecracker|
-🎃|jack_o_lantern|halloween pumpkin
-🎆|fireworks|
-🕹️|joystick|game
-🃏|black_joker|card
-🎟️|tickets|
-🧵|thread|
-🪄|magic_wand|
-🧊|ice_cube|cold
-🪐|ringed_planet|saturn
-`)
-
-// ---------------------------------------------------------------------
-// Search
-// ---------------------------------------------------------------------
-
-function search (
-    data:EmojiEntry[],
-    query:string,
-    limit:number,
-):EmojiEntry[] {
-    const q = query.toLowerCase()
-    const starts:EmojiEntry[] = []
-    const contains:EmojiEntry[] = []
-    const keyword:EmojiEntry[] = []
-
-    for (const e of data) {
-        const name = e.name.toLowerCase()
-        if (name.startsWith(q)) starts.push(e)
-        else if (name.includes(q)) contains.push(e)
-        else if (e.keywords?.some(k => k.toLowerCase().startsWith(q))) {
-            keyword.push(e)
-        }
-        if (starts.length >= limit) break
-    }
-
-    return [...starts, ...contains, ...keyword].slice(0, limit)
 }
 
 // ---------------------------------------------------------------------
@@ -608,11 +185,11 @@ function ensureStyles (root:Document|ShadowRoot):void {
     ;(r instanceof Document ? r.head : r).append(style)
 }
 
-export class EmojiSearch extends HTMLElement {
+export class EmojiInput extends HTMLElement {
     static TAG = 'emoji-search'
 
-    static define (tag = EmojiSearch.TAG):void {
-        if (!customElements.get(tag)) customElements.define(tag, EmojiSearch)
+    static define (tag = EmojiInput.TAG):void {
+        if (!customElements.get(tag)) customElements.define(tag, EmojiInput)
     }
 
     /** Emoji dataset. Replace with a full list if you like. */
@@ -890,11 +467,11 @@ export class EmojiSearch extends HTMLElement {
     }
 }
 
-EmojiSearch.define()
+EmojiInput.define()
 
 declare global {
     interface HTMLElementTagNameMap {
-        'emoji-search':EmojiSearch;
+        'emoji-search':EmojiInput;
     }
     interface HTMLElementEventMap {
         'emoji-select':CustomEvent<EmojiSelectDetail>;

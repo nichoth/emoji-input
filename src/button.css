@@ -1,0 +1,23 @@
+emoji-button {
+    display: inline-block;
+    color: var(--emoji-button-color, currentColor);
+
+    & button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: inherit;
+        font: inherit;
+        width: var(--emoji-button-size, 24px);
+        height: var(--emoji-button-size, 24px);
+
+        & svg {
+            min-width: var(--emoji-button-size, 24px);
+            min-height: var(--emoji-button-size, 24px);
+        }
+
+        &:disabled {
+            cursor: default;
+        }
+    }
+}

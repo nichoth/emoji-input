@@ -1,12 +1,19 @@
 import { type FunctionComponent, render } from 'preact'
 import { html } from 'htm/preact'
-import { EmojiSearch } from '../src/index.js'
+import { EmojiInput, EmojiPicker, EmojiButton } from '../src/index.js'
+import '../src/picker.css'
+import '../src/button.css'
 
-const Example:FunctionComponent<unknown> = function () {
+const Example:FunctionComponent = function () {
     return html`<div class="example">
-        <${EmojiSearch.TAG}>
-            <textarea></textarea>
+        <${EmojiInput.TAG}>
+            <textarea id="message"></textarea>
         <//>
+
+        <div class="picker-row">
+            <${EmojiButton.TAG} for="picker"><//>
+            <${EmojiPicker.TAG} id="picker" for="message"><//>
+        </div>
     </div>`
 }
 

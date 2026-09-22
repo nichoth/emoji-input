@@ -11,6 +11,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./picker": {
+      "import": "./dist/picker.js",
+      "require": "./dist/picker.cjs"
+    },
+    "./button": {
+      "import": "./dist/button.js",
+      "require": "./dist/button.cjs"
+    },
     "./*": {
       "import": [
         "./dist/*.js",
@@ -24,11 +32,11 @@
   },
   "scripts": {
     "lint": "eslint \"./**/*.{ts,js}\"",
-    "test": "npm run build && esbuild ./test/index.ts --bundle | tapout",
-    "build-cjs": "esbuild src/*.ts --format=cjs --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --out-extension:.js=.cjs --sourcemap",
-    "build-cjs:min": "esbuild src/*.ts --format=cjs --minify --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --out-extension:.js=.min.cjs --sourcemap",
-    "build-esm": "esbuild src/*.ts --format=esm --metafile=dist/meta.json --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --sourcemap && tsc --emitDeclarationOnly --project tsconfig.build.json --outDir dist",
-    "build-esm:min": "esbuild ./src/*.ts --format=esm --keep-names --bundle --tsconfig=tsconfig.build.json --minify --out-extension:.js=.min.js --outdir=./dist --sourcemap",
+    "test": "npm run build && esbuild ./test/index.ts --bundle --loader:.css=text | tapout",
+    "build-cjs": "esbuild src/*.ts --format=cjs --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --out-extension:.js=.cjs --loader:.css=text --sourcemap",
+    "build-cjs:min": "esbuild src/*.ts --format=cjs --minify --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --out-extension:.js=.min.cjs --loader:.css=text --sourcemap",
+    "build-esm": "esbuild src/*.ts --format=esm --metafile=dist/meta.json --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --loader:.css=text --sourcemap && tsc --emitDeclarationOnly --project tsconfig.build.json --outDir dist",
+    "build-esm:min": "esbuild ./src/*.ts --format=esm --keep-names --bundle --tsconfig=tsconfig.build.json --minify --out-extension:.js=.min.js --outdir=./dist --loader:.css=text --sourcemap",
     "build-example": "mkdir -p ./public && rm -rf ./public/* && VITE_DEBUG_MODE=staging vite --mode staging --base=\"/repo-name\" build",
     "build-docs": "typedoc ./src/index.ts",
     "build": "mkdir -p ./dist && rm -rf ./dist/* && npm run build-cjs && npm run build-esm && npm run build-esm:min && npm run build-cjs:min",
@@ -39,9 +47,12 @@
     "postversion": "git push --follow-tags && npm publish",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@emoji-mart/data": "^1.2.1"
+  },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.5",
+    "@substrate-system/css-normalize": "^0.0.15",
     "@substrate-system/debug": "^0.9.64",
     "@substrate-system/dom": "^0.1.13",
     "@substrate-system/tapout": "^0.0.41",
@@ -54,7 +65,10 @@
     "lightningcss": "^1.30.2",
     "markdown-toc": "^1.2.0",
     "newneostandard": "^0.14.1",
+    "nightralph": "^0.0.50",
     "preact": "^10.29.3",
+    "stylelint": "^17.15.0",
+    "stylelint-config-standard": "^40.0.0",
     "tap-spec": "^5.0.0",
     "typedoc": "^0.28.9",
     "typescript": "^6.0.3",

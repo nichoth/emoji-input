@@ -6,3 +6,6 @@ dist
 .env
 public
 docs
+.claude
+.agents
+AGENTS.md
