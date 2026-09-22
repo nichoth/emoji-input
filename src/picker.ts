@@ -3,6 +3,7 @@ import { search } from './search.js'
 
 export { EmojiButton } from './button.js'
 
+type PickerField = HTMLTextAreaElement|HTMLInputElement
 type PickerCategory = {
     readonly id:string;
     readonly label:string;
