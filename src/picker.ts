@@ -1,7 +1,19 @@
 import { DEFAULT_EMOJIS, type EmojiEntry } from './data.js'
 import { search } from './search.js'
+import PICKER_STYLES from './picker.css'
 
 export { EmojiButton } from './button.js'
+
+const PICKER_STYLE_ID = 'emoji-picker-styles'
+
+function ensurePickerStyles (root:Document|ShadowRoot):void {
+    const r = root as Document|ShadowRoot
+    if (r.querySelector(`#${PICKER_STYLE_ID}`)) return
+    const style = document.createElement('style')
+    style.id = PICKER_STYLE_ID
+    style.textContent = PICKER_STYLES
+    ;(r instanceof Document ? r.head : r).append(style)
+}
 
 type PickerField = HTMLTextAreaElement|HTMLInputElement
 type PickerCategory = {
@@ -142,6 +154,8 @@ export class EmojiPicker extends HTMLElement {
     }
 
     connectedCallback ():void {
+        const root = this.getRootNode() as Document|ShadowRoot
+        ensurePickerStyles(root)
         this.loadRecents()
         this.loadSkinTone()
         this.syncMode()

@@ -12,6 +12,8 @@ import { EmojiPicker } from '../src/picker.js'
 import { EmojiButton } from '../src/button.js'
 import { search } from '../src/search.js'
 import packageJson from '../package.json'
+import '../src/button.css'
+import '../src/picker.css'
 
 // -- Helpers ---------------------------------------------------
 
@@ -511,12 +513,10 @@ test('emoji-picker injects styles and accepts picker custom properties', t => {
         '400px',
         'picker width can be themed with a custom property'
     )
-    const hasPickerStyles = Array.from(document.adoptedStyleSheets).some(
-        styleSheet => Array.from(styleSheet.cssRules).some(rule => (
-            rule.cssText.includes('--emoji-picker-width')
-        ))
+    const hasPickerStyles = document.head.querySelector(
+        '#emoji-picker-styles'
     )
-    t.ok(hasPickerStyles, 'injects picker styles into adopted stylesheets')
+    t.ok(hasPickerStyles, 'injects picker styles via style tag')
     picker.remove()
 })
 

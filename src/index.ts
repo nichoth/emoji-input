@@ -163,20 +163,7 @@ emoji-search { display: contents; }
 }
 `
 
-let sheet:CSSStyleSheet|null = null
-
-/** Inject styles once per root (document or a host shadow root). */
 function ensureStyles (root:Document|ShadowRoot):void {
-    if ('adoptedStyleSheets' in root) {
-        if (!sheet) {
-            sheet = new CSSStyleSheet()
-            sheet.replaceSync(STYLES)
-        }
-        if (!root.adoptedStyleSheets.includes(sheet)) {
-            root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet]
-        }
-        return
-    }
     const r = root as Document|ShadowRoot
     if (r.querySelector(`#${STYLE_ID}`)) return
     const style = document.createElement('style')
