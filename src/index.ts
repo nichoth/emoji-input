@@ -1,41 +1,32 @@
 /**
- * <emoji-search>
+ * <emoi-input>
  *
  * Wrap a <textarea> or <input>. When the user types `:` followed by
  * two or more characters, a popover opens at the caret with matching
  * emoji. Arrow keys move, Enter/Tab insert, Escape closes.
  *
  * No shadow DOM. The list is a plain child element with class
- * `emoji-search__list`; styles are injected once into the document
- * (or into the shadow root the element happens to live in) and use
- * `--emoji-search-*` custom properties for theming.
+ * `emoji-search__list`; import `index.css` alongside the component
+ * and use `--emoji-search-*` custom properties for theming.
  *
- *   <emoji-search>
+ *   <emoi-input>
  *     <textarea></textarea>
- *   </emoji-search>
+ *   </emoi-input>
  *
  * Or attach to a field that lives elsewhere:
  *
- *   const el = document.querySelector('emoji-search')
+ *   const el = document.querySelector('emoi-input')
  *   el.attach(document.querySelector('#chat'))
  *
  * Pass your own data (e.g. from `unicode-emoji-json` or `emojibase-data`)
  * via `el.emojis = [{ emoji: '🍕', name: 'pizza', keywords: ['food'] }]`.
  */
 
-import {
-    DEFAULT_EMOJIS,
-    type EmojiEntry,
-} from './data.js'
+import { DEFAULT_EMOJIS, type EmojiEntry } from './data.js'
 import { search } from './search.js'
-
 export { EmojiPicker } from './picker.js'
 export { EmojiButton } from './button.js'
-
-export {
-    DEFAULT_EMOJIS,
-    type EmojiEntry,
-} from './data.js'
+export { DEFAULT_EMOJIS, type EmojiEntry } from './data.js'
 
 export type EmojiSelectDetail = {
     emoji:EmojiEntry;
@@ -107,76 +98,48 @@ function caretRect (field:Field, pos:number):CaretRect {
 // Element
 // ---------------------------------------------------------------------
 
-const STYLE_ID = 'emoji-search-styles'
-
-const STYLES = `
-emoji-search { display: contents; }
-
-.emoji-search__list {
-    position: fixed;
-    inset: auto;
-    margin: 0;
-    padding: var(--emoji-search-padding, 4px);
-    min-width: var(--emoji-search-min-width, 220px);
-    max-width: var(--emoji-search-max-width, 320px);
-    border: 1px solid var(--emoji-search-border, #d0d0d0);
-    border-radius: var(--emoji-search-radius, 8px);
-    background: var(--emoji-search-bg, #fff);
-    color: var(--emoji-search-fg, #111);
-    box-shadow: var(--emoji-search-shadow, 0 8px 24px rgba(0,0,0,.18));
-    font: var(--emoji-search-font, 14px/1.3 system-ui, sans-serif);
-    overflow: hidden;
-}
-.emoji-search__list::backdrop { display: none; }
-
-.emoji-search__item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 8px;
-    border-radius: var(--emoji-search-item-radius, 5px);
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-}
-.emoji-search__item[aria-selected="true"] {
-    background: var(--emoji-search-active-bg, #e8e8e8);
-    color: var(--emoji-search-active-fg, inherit);
-}
-.emoji-search__glyph {
-    font-size: 1.3em;
-    width: 1.5em;
-    text-align: center;
-    flex: none;
-}
-.emoji-search__name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.emoji-search__name b {
-    font-weight: 600;
-    color: var(--emoji-search-match, inherit);
-}
-.emoji-search__empty {
-    padding: 8px 10px;
-    opacity: .6;
-}
-`
-
-function ensureStyles (root:Document|ShadowRoot):void {
-    const r = root as Document|ShadowRoot
-    if (r.querySelector(`#${STYLE_ID}`)) return
-    const style = document.createElement('style')
-    style.id = STYLE_ID
-    style.textContent = STYLES
-    ;(r instanceof Document ? r.head : r).append(style)
-}
-
 export class EmojiInput extends HTMLElement {
-    static TAG = 'emoji-search'
+    static TAG = 'emoi-input'
 
     static define (tag = EmojiInput.TAG):void {
-        if (!customElements.get(tag)) customElements.define(tag, EmojiInput)
+        if (!customElements.get(tag)) {
+            customElements.define(tag, EmojiInput)
+        }
+    }
+
+    static render (el:EmojiInput):void {
+        const list = document.createElement('div')
+        list.className = 'emoji-search__list'
+        list.setAttribute('popover', 'manual')
+        list.setAttribute('role', 'listbox')
+        list.id = `${el.uid}-list`
+        el.list = list
+
+        list.addEventListener(
+            'pointerdown',
+            ev => ev.preventDefault(),
+        )
+        list.addEventListener('click', ev => {
+            const row = (ev.target as HTMLElement)
+                .closest<HTMLElement>(
+                    '.emoji-search__item'
+                )
+            if (!row) return
+            el.index = Number(row.dataset.index)
+            el.commit()
+        })
+        list.addEventListener('pointermove', ev => {
+            const row = (ev.target as HTMLElement)
+                .closest<HTMLElement>(
+                    '.emoji-search__item'
+                )
+            if (!row) return
+            const i = Number(row.dataset.index)
+            if (i !== el.index) {
+                el.index = i
+                el.paintSelection()
+            }
+        })
     }
 
     /** Emoji dataset. Replace with a full list if you like. */
@@ -187,44 +150,19 @@ export class EmojiInput extends HTMLElement {
     maxResults = 8
 
     private field:Field|null = null
-    private list:HTMLElement
+    private list!:HTMLElement
     private results:EmojiEntry[] = []
     private index = 0
     private query = ''
     private range:{ start:number; end:number }|null = null
     private observer:MutationObserver|null = null
 
-    private uid = `emoji-search-${Math.random().toString(36).slice(2, 8)}`
-
-    constructor () {
-        super()
-        const list = document.createElement('div')
-        list.className = 'emoji-search__list'
-        list.setAttribute('popover', 'manual')
-        list.setAttribute('role', 'listbox')
-        list.id = `${this.uid}-list`
-        this.list = list
-
-        list.addEventListener('pointerdown', ev => ev.preventDefault())  // keep focus
-        list.addEventListener('click', ev => {
-            const row = (ev.target as HTMLElement)
-                .closest<HTMLElement>('.emoji-search__item')
-            if (!row) return
-            this.index = Number(row.dataset.index)
-            this.commit()
-        })
-        list.addEventListener('pointermove', ev => {
-            const row = (ev.target as HTMLElement)
-                .closest<HTMLElement>('.emoji-search__item')
-            if (!row) return
-            const i = Number(row.dataset.index)
-            if (i !== this.index) { this.index = i; this.paintSelection() }
-        })
-    }
+    private uid =
+        `emoji-search-${Math.random().toString(36).slice(2, 8)}`
 
     connectedCallback ():void {
         const root = this.getRootNode() as Document|ShadowRoot
-        ensureStyles(root)
+        if (!this.list) EmojiInput.render(this)
         if (!this.list.isConnected) this.append(this.list)
 
         const forId = this.getAttribute('for')
@@ -458,7 +396,7 @@ EmojiInput.define()
 
 declare global {
     interface HTMLElementTagNameMap {
-        'emoji-search':EmojiInput;
+        'emoi-input':EmojiInput;
     }
     interface HTMLElementEventMap {
         'emoji-select':CustomEvent<EmojiSelectDetail>;

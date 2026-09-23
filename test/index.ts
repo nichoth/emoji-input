@@ -143,8 +143,8 @@ test('shared search ranks keyword prefixes after name matches', t => {
 // -- Registration and setup ------------------------------------
 
 test('custom element is registered', t => {
-    const ctor = customElements.get('emoji-search')
-    t.ok(ctor, 'emoji-search tag is defined')
+    const ctor = customElements.get('emoi-input')
+    t.ok(ctor, 'emoi-input tag is defined')
     t.equal(ctor, EmojiInput, 'maps to EmojiInput class')
 })
 
@@ -283,7 +283,7 @@ test('main entrypoint exports all component classes', t => {
     )
     t.equal(
         EmojiInput,
-        customElements.get('emoji-search'),
+        customElements.get('emoi-input'),
         'main entrypoint exports EmojiInput'
     )
 })
@@ -721,7 +721,7 @@ test('auto-attaches to child textarea', t => {
 test('attaches to child added after connect', async t => {
     t.plan(1)
     const el = document.createElement(
-        'emoji-search'
+        'emoi-input'
     ) as EmojiInput
     document.body.appendChild(el)
     const textarea = document.createElement('textarea')
@@ -741,7 +741,7 @@ test('attaches via for attribute', t => {
     document.body.appendChild(textarea)
 
     const el = document.createElement(
-        'emoji-search'
+        'emoi-input'
     ) as EmojiInput
     el.setAttribute('for', 'test-external-field')
     el.emojis = SMALL_SET
@@ -762,7 +762,7 @@ test('attaches via for attribute', t => {
 
 test('works with input element', t => {
     const el = document.createElement(
-        'emoji-search'
+        'emoi-input'
     ) as EmojiInput
     const input = document.createElement('input')
     input.type = 'text'
@@ -1202,7 +1202,7 @@ function setup (emojis?:EmojiEntry[]):{
     textarea:HTMLTextAreaElement;
 } {
     const el = document.createElement(
-        'emoji-search'
+        'emoi-input'
     ) as EmojiInput
     const textarea = document.createElement('textarea')
     el.appendChild(textarea)

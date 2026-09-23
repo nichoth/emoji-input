@@ -48,7 +48,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@emoji-mart/data": "^1.2.1"
+    "@emoji-mart/data": "^1.2.1",
+    "microtags": "^0.0.12"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.5",

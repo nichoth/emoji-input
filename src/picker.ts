@@ -1,19 +1,7 @@
 import { DEFAULT_EMOJIS, type EmojiEntry } from './data.js'
 import { search } from './search.js'
-import PICKER_STYLES from './picker.css'
 
 export { EmojiButton } from './button.js'
-
-const PICKER_STYLE_ID = 'emoji-picker-styles'
-
-function ensurePickerStyles (root:Document|ShadowRoot):void {
-    const r = root as Document|ShadowRoot
-    if (r.querySelector(`#${PICKER_STYLE_ID}`)) return
-    const style = document.createElement('style')
-    style.id = PICKER_STYLE_ID
-    style.textContent = PICKER_STYLES
-    ;(r instanceof Document ? r.head : r).append(style)
-}
 
 type PickerField = HTMLTextAreaElement|HTMLInputElement
 type PickerCategory = {
@@ -63,16 +51,18 @@ export class EmojiPicker extends HTMLElement {
     ]
 
     static define (tag = EmojiPicker.TAG):void {
+        if (!window || !window.customElements) return
+        const customElements = window.customElements
         if (!customElements.get(tag)) customElements.define(tag, EmojiPicker)
     }
 
     private data:Array<EmojiEntry> = DEFAULT_EMOJIS
-    private readonly panel:HTMLDivElement
-    private readonly tabs:HTMLDivElement
-    private readonly searchInput:HTMLInputElement
-    private readonly grid:HTMLDivElement
-    private readonly tones:HTMLDivElement
-    private readonly preview:HTMLDivElement
+    private panel!:HTMLDivElement
+    private tabs!:HTMLDivElement
+    private searchInput!:HTMLInputElement
+    private grid!:HTMLDivElement
+    private tones!:HTMLDivElement
+    private preview!:HTMLDivElement
     private category = 'recent'
     private query = ''
     private opened = false
@@ -80,7 +70,8 @@ export class EmojiPicker extends HTMLElement {
     private skinTone = 0
 
     get recentKey ():string {
-        return this.getAttribute('recent-key') ?? DEFAULT_RECENT_KEY
+        return this.getAttribute('recent-key')
+            ?? DEFAULT_RECENT_KEY
     }
 
     set recentKey (value:string) {
@@ -96,48 +87,50 @@ export class EmojiPicker extends HTMLElement {
         this.setAttribute('skin-tone-key', value)
     }
 
-    constructor () {
-        super()
-        this.panel = document.createElement('div')
-        this.panel.className = 'emoji-picker__panel'
-        this.panel.setAttribute('popover', 'manual')
+    static render (el:EmojiPicker):void {
+        el.panel = document.createElement('div')
+        el.panel.className = 'emoji-picker__panel'
+        el.panel.setAttribute('popover', 'manual')
 
-        this.tabs = document.createElement('div')
-        this.tabs.className = 'emoji-picker__tabs'
-        this.tabs.setAttribute('role', 'tablist')
+        el.tabs = document.createElement('div')
+        el.tabs.className = 'emoji-picker__tabs'
+        el.tabs.setAttribute('role', 'tablist')
 
-        this.searchInput = document.createElement('input')
-        this.searchInput.className = 'emoji-picker__search'
-        this.searchInput.type = 'search'
-        this.searchInput.placeholder = 'Search emoji'
-        this.searchInput.setAttribute('aria-label', 'Search emoji')
-        this.searchInput.addEventListener('input', () => {
-            this.query = this.searchInput.value
-            this.renderGrid()
+        el.searchInput = document.createElement('input')
+        el.searchInput.className = 'emoji-picker__search'
+        el.searchInput.type = 'search'
+        el.searchInput.placeholder = 'Search emoji'
+        el.searchInput.setAttribute(
+            'aria-label',
+            'Search emoji',
+        )
+        el.searchInput.addEventListener('input', () => {
+            el.query = el.searchInput.value
+            el.renderGrid()
         })
 
-        this.tones = document.createElement('div')
-        this.tones.className = 'emoji-picker__tones'
-        this.tones.setAttribute('role', 'radiogroup')
-        this.tones.setAttribute('aria-label', 'Skin tone')
+        el.tones = document.createElement('div')
+        el.tones.className = 'emoji-picker__tones'
+        el.tones.setAttribute('role', 'radiogroup')
+        el.tones.setAttribute('aria-label', 'Skin tone')
 
-        this.grid = document.createElement('div')
-        this.grid.className = 'emoji-picker__grid'
-        this.grid.setAttribute('role', 'grid')
+        el.grid = document.createElement('div')
+        el.grid.className = 'emoji-picker__grid'
+        el.grid.setAttribute('role', 'grid')
 
-        this.preview = document.createElement('div')
-        this.preview.className = 'emoji-picker__preview'
-        this.preview.setAttribute('role', 'status')
-        this.preview.setAttribute('aria-live', 'polite')
+        el.preview = document.createElement('div')
+        el.preview.className = 'emoji-picker__preview'
+        el.preview.setAttribute('role', 'status')
+        el.preview.setAttribute('aria-live', 'polite')
 
-        this.panel.append(
-            this.tabs,
-            this.searchInput,
-            this.tones,
-            this.grid,
-            this.preview,
+        el.panel.append(
+            el.tabs,
+            el.searchInput,
+            el.tones,
+            el.grid,
+            el.preview,
         )
-        this.addEventListener('keydown', this.onKeydown)
+        el.addEventListener('keydown', el.onKeydown)
     }
 
     get emojis ():Array<EmojiEntry> {
@@ -154,8 +147,7 @@ export class EmojiPicker extends HTMLElement {
     }
 
     connectedCallback ():void {
-        const root = this.getRootNode() as Document|ShadowRoot
-        ensurePickerStyles(root)
+        if (!this.panel) EmojiPicker.render(this)
         this.loadRecents()
         this.loadSkinTone()
         this.syncMode()
