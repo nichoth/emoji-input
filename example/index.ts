@@ -1,6 +1,7 @@
 import { type FunctionComponent, render } from 'preact'
 import { html } from 'htm/preact'
 import { EmojiInput, EmojiPicker, EmojiButton } from '../src/index.js'
+import '../src/index.css'
 import '../src/picker.css'
 import '../src/button.css'
 
