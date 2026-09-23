@@ -21,3 +21,12 @@ emoji-button {
         }
     }
 }
+
+.visually-hidden:not(:focus, :active) {
+    clip-path: inset(100%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}

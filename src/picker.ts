@@ -68,6 +68,11 @@ export class EmojiPicker extends HTMLElement {
     private opened = false
     private recentNames:Array<string> = []
     private skinTone = 0
+    private uid = `emoji-picker-${
+        Math.random().toString(36).slice(2, 8)
+    }`
+
+    private triggerElement:HTMLElement|null = null
 
     get recentKey ():string {
         return this.getAttribute('recent-key')
@@ -104,6 +109,10 @@ export class EmojiPicker extends HTMLElement {
             'aria-label',
             'Search emoji',
         )
+        el.searchInput.setAttribute(
+            'aria-controls',
+            `${el.uid}-grid`,
+        )
         el.searchInput.addEventListener('input', () => {
             el.query = el.searchInput.value
             el.renderGrid()
@@ -116,7 +125,9 @@ export class EmojiPicker extends HTMLElement {
 
         el.grid = document.createElement('div')
         el.grid.className = 'emoji-picker-grid'
+        el.grid.id = `${el.uid}-grid`
         el.grid.setAttribute('role', 'grid')
+        el.grid.setAttribute('aria-label', 'Emoji')
 
         el.preview = document.createElement('div')
         el.preview.className = 'emoji-picker-preview'
@@ -131,6 +142,7 @@ export class EmojiPicker extends HTMLElement {
             el.preview,
         )
         el.addEventListener('keydown', el.onKeydown)
+        el.tabs.addEventListener('keydown', el.onTabKeydown)
     }
 
     get emojis ():Array<EmojiEntry> {
@@ -172,6 +184,9 @@ export class EmojiPicker extends HTMLElement {
     }
 
     open (anchor?:HTMLElement):void {
+        const el = document.activeElement
+        this.triggerElement =
+            el instanceof HTMLElement ? el : null
         this.panel.hidden = false
         if (!this.hasAttribute('inline')
             && typeof this.panel.showPopover === 'function') {
@@ -183,6 +198,7 @@ export class EmojiPicker extends HTMLElement {
             this.panel.style.left = `${rect.left}px`
         }
         this.opened = true
+        this.searchInput.focus({ preventScroll:true })
     }
 
     close ():void {
@@ -191,6 +207,8 @@ export class EmojiPicker extends HTMLElement {
         }
         this.panel.hidden = true
         this.opened = false
+        this.triggerElement?.focus()
+        this.triggerElement = null
     }
 
     private renderTabs ():void {
@@ -200,12 +218,15 @@ export class EmojiPicker extends HTMLElement {
             const tab = document.createElement('button')
             tab.type = 'button'
             tab.className = 'emoji-picker-tab'
+            tab.id = `${this.uid}-tab-${category.id}`
             tab.setAttribute('role', 'tab')
             tab.setAttribute('aria-label', category.label)
             tab.setAttribute(
                 'aria-selected',
                 String(category.id === this.category),
             )
+            tab.tabIndex = category.id === this.category ?
+                0 : -1
             tab.title = category.label
             tab.textContent = category.icon
             tab.addEventListener('click', () => {
@@ -459,6 +480,41 @@ export class EmojiPicker extends HTMLElement {
             event.preventDefault()
             buttons[current]?.click()
         }
+    }
+
+    private onTabKeydown = (event:KeyboardEvent):void => {
+        const tabs = Array.from(
+            this.tabs.querySelectorAll<HTMLButtonElement>(
+                '[role="tab"]'
+            )
+        )
+        const current = tabs.indexOf(
+            document.activeElement as HTMLButtonElement
+        )
+        if (current === -1) return
+
+        let next = -1
+        if (event.key === 'ArrowRight') {
+            next = (current + 1) % tabs.length
+        } else if (event.key === 'ArrowLeft') {
+            next = (current - 1 + tabs.length)
+                % tabs.length
+        } else if (event.key === 'Home') {
+            next = 0
+        } else if (event.key === 'End') {
+            next = tabs.length - 1
+        }
+
+        if (next < 0) return
+        event.preventDefault()
+        event.stopPropagation()
+        const allCategories = [RECENTS, ...CATEGORIES]
+        this.category = allCategories[next]!.id
+        this.renderTabs()
+        this.renderGrid()
+        this.tabs.querySelectorAll<HTMLButtonElement>(
+            '[role="tab"]'
+        )[next]?.focus()
     }
 
     private onDocumentClick = (event:MouseEvent):void => {

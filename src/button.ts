@@ -28,8 +28,12 @@ export class EmojiButton extends Base {
     }
 
     static render ():string {
-        return `<button class="emoji-button" type="button"
-            aria-label="Open emoji picker">${ICON_SVG}</button>`
+        return `<button class="emoji-button" type="button">
+            ${ICON_SVG}
+            <span class="visually-hidden">
+                Open emoji picker
+            </span>
+        </button>`
     }
 
     connectedCallback ():void {

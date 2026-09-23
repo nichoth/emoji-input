@@ -73,6 +73,7 @@ export class EmojiInput extends HTMLElement {
         return `<div class="emoji-search-list"
             popover="manual"
             role="listbox"
+            aria-label="Emoji suggestions"
             id="${uid}-list"
         ></div>`
     }

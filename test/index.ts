@@ -12,8 +12,12 @@ import { EmojiPicker } from '../src/picker.js'
 import { EmojiButton } from '../src/button.js'
 import { search } from '../src/search.js'
 import packageJson from '../package.json'
-import '../src/button.css'
-import '../src/picker.css'
+import buttonCss from '../src/button.css'
+import pickerCss from '../src/picker.css'
+
+const _style = document.createElement('style')
+_style.textContent = [buttonCss, pickerCss].join('\n')
+document.head.appendChild(_style)
 
 // -- Helpers ---------------------------------------------------
 
@@ -72,6 +76,10 @@ test('static render returns an HTML string', t => {
     t.ok(
         html.includes('role="listbox"'),
         'has listbox role'
+    )
+    t.ok(
+        html.includes('aria-label="Emoji suggestions"'),
+        'listbox has an accessible label'
     )
     t.ok(
         html.includes('id="test-uid-list"'),
@@ -194,6 +202,10 @@ test('emoji-button custom element renders an accessible smiley button', t => {
     t.ok(inner, 'renders a native button')
     t.equal(inner?.type, 'button', 'button does not submit forms')
     t.ok(inner?.querySelector('svg'), 'renders the smiley SVG inline')
+    t.ok(
+        inner?.querySelector('.visually-hidden'),
+        'has a visually-hidden label'
+    )
     button.remove()
 })
 
@@ -381,6 +393,130 @@ test('emoji-picker grid exists when open', t => {
 
     const grid = picker.querySelector<HTMLElement>('[role="grid"]')
     t.ok(grid, 'grid exists')
+    picker.close()
+    picker.remove()
+})
+
+test('emoji-picker grid has an accessible label', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    const grid = picker.querySelector('[role="grid"]')
+    t.equal(
+        grid?.getAttribute('aria-label'),
+        'Emoji',
+        'grid has aria-label'
+    )
+    picker.remove()
+})
+
+test('emoji-picker search controls the grid', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    const search = picker.querySelector(
+        'input[type="search"]'
+    )
+    const grid = picker.querySelector('[role="grid"]')
+    t.ok(
+        search?.getAttribute('aria-controls'),
+        'search has aria-controls'
+    )
+    t.equal(
+        search?.getAttribute('aria-controls'),
+        grid?.id,
+        'search aria-controls references the grid'
+    )
+    picker.remove()
+})
+
+test('emoji-picker moves focus to search on open', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+    const search = picker.querySelector(
+        'input[type="search"]'
+    )
+    t.equal(
+        document.activeElement,
+        search,
+        'search input is focused after open'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('emoji-picker returns focus to trigger on close', t => {
+    const trigger = document.createElement('button')
+    trigger.textContent = 'trigger'
+    document.body.appendChild(trigger)
+    trigger.focus()
+
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open(trigger)
+    picker.close()
+    t.equal(
+        document.activeElement,
+        trigger,
+        'focus returns to the trigger element'
+    )
+    picker.remove()
+    trigger.remove()
+})
+
+test('emoji-picker tabs use roving tabindex', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+
+    const tabs = picker.querySelectorAll('[role="tab"]')
+    const selected = tabs[0]
+    const notSelected = tabs[1]
+    t.equal(
+        selected?.getAttribute('tabindex'),
+        '0',
+        'selected tab has tabindex 0'
+    )
+    t.equal(
+        notSelected?.getAttribute('tabindex'),
+        '-1',
+        'non-selected tab has tabindex -1'
+    )
+    picker.remove()
+})
+
+test('emoji-picker tabs navigate with arrow keys', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+
+    const firstTab = picker.querySelector<HTMLElement>(
+        '[role="tab"]'
+    )
+    firstTab?.focus()
+    keydown(firstTab!, 'ArrowRight')
+
+    const tabs = picker.querySelectorAll('[role="tab"]')
+    t.equal(
+        tabs[1]?.getAttribute('aria-selected'),
+        'true',
+        'ArrowRight activates the next tab'
+    )
+    t.equal(
+        document.activeElement,
+        tabs[1],
+        'ArrowRight moves focus to the next tab'
+    )
     picker.close()
     picker.remove()
 })

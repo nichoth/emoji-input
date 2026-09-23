@@ -15,11 +15,15 @@ test('EmojiButton.render contains a button element', t => {
     )
 })
 
-test('EmojiButton.render has an accessible label', t => {
+test('EmojiButton.render has a visually-hidden label', t => {
     const html = EmojiButton.render()
     t.ok(
-        html.includes('aria-label="Open emoji picker"'),
-        'has aria-label for the button'
+        html.includes('class="visually-hidden"'),
+        'has a visually-hidden label span'
+    )
+    t.ok(
+        html.includes('Open emoji picker'),
+        'label text is present in the markup'
     )
 })
 
