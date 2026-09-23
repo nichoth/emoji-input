@@ -15,23 +15,32 @@ export class EmojiButton extends HTMLElement {
     static TAG = 'emoji-button'
 
     static define (tag = EmojiButton.TAG):void {
-        if (!customElements.get(tag)) customElements.define(tag, EmojiButton)
+        if (!customElements.get(tag)) {
+            customElements.define(tag, EmojiButton)
+        }
     }
 
-    private readonly button:HTMLButtonElement
-
-    constructor () {
-        super()
-        this.button = document.createElement('button')
-        this.button.className = 'emoji-button'
-        this.button.type = 'button'
-        this.button.setAttribute('aria-label', 'Open emoji picker')
-        this.button.innerHTML = ICON_SVG
-        this.button.addEventListener('click', this.onClick)
+    static render ():HTMLButtonElement {
+        const button = document.createElement('button')
+        button.className = 'emoji-button'
+        button.type = 'button'
+        button.setAttribute('aria-label', 'Open emoji picker')
+        button.innerHTML = ICON_SVG
+        return button
     }
+
+    private button:HTMLButtonElement|null = null
 
     connectedCallback ():void {
-        if (!this.button.isConnected) this.append(this.button)
+        const btn = this.querySelector('button.emoji-button') as HTMLButtonElement
+        if (btn) {
+            this.button = btn
+        } else {
+            this.button = EmojiButton.render()
+            this.append(this.button)
+        }
+
+        this.button!.addEventListener('click', this.onClick)
     }
 
     private onClick = (ev:MouseEvent):void => {

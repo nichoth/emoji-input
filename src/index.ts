@@ -70,23 +70,18 @@ export class EmojiInput extends HTMLElement {
     }
 
     static render (uid:string):string {
-        return '<div class="emoji-search-list"'
-            + ' popover="manual"'
-            + ' role="listbox"'
-            + ` id="${uid}-list"`
-            + '></div>'
+        return `<div class="emoji-search-list"
+            popover="manual"
+            role="listbox"
+            id="${uid}-list"
+        ></div>`
     }
 
     private hydrate ():void {
-        this.list.addEventListener(
-            'pointerdown',
-            ev => ev.preventDefault(),
-        )
+        this.list.addEventListener('pointerdown', ev => ev.preventDefault())
         this.list.addEventListener('click', ev => {
             const row = (ev.target as HTMLElement)
-                .closest<HTMLElement>(
-                    '.emoji-search-item'
-                )
+                .closest<HTMLElement>('.emoji-search-item')
             if (!row) return
             this.index = Number(row.dataset.index)
             this.commit()
@@ -120,16 +115,14 @@ export class EmojiInput extends HTMLElement {
     private range:{ start:number; end:number }|null = null
     private observer:MutationObserver|null = null
 
-    private uid =
-        `emoji-search-${Math.random().toString(36).slice(2, 8)}`
+    private uid = `emoji-search-${Math.random().toString(36).slice(2, 8)}`
 
     connectedCallback ():void {
         const root = this.getRootNode() as Document|ShadowRoot
         if (!this.list) {
             const wrapper = document.createElement('div')
             wrapper.innerHTML = EmojiInput.render(this.uid)
-            this.list =
-                wrapper.firstElementChild as HTMLElement
+            this.list = wrapper.firstElementChild as HTMLElement
             this.hydrate()
         }
         if (!this.list.isConnected) this.append(this.list)
@@ -264,7 +257,7 @@ export class EmojiInput extends HTMLElement {
         const r = this.range
         if (!f || !chosen || !r) return
 
-        const insert = chosen.emoji + ' '
+        const insert = `${chosen.emoji} `
         f.setRangeText(insert, r.start, r.end, 'end')
         const query = this.query
         this.close()
@@ -307,11 +300,11 @@ export class EmojiInput extends HTMLElement {
             const at = e.name.toLowerCase().indexOf(q)
             if (at >= 0) {
                 name.append(
-                    ':' + e.name.slice(0, at),
+                    `:${e.name.slice(0, at)}`,
                     Object.assign(document.createElement('b'), {
                         textContent:e.name.slice(at, at + q.length),
                     }),
-                    e.name.slice(at + q.length) + ':',
+                    `${e.name.slice(at + q.length)}:`,
                 )
             } else {
                 name.textContent = `:${e.name}:`
