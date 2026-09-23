@@ -218,6 +218,7 @@ export class EmojiPicker extends HTMLElement {
     }
 
     private syncMode ():void {
+        if (!this.panel) return
         if (this.hasAttribute('inline')) {
             this.panel.removeAttribute('popover')
         } else {
