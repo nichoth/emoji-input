@@ -89,15 +89,15 @@ export class EmojiPicker extends HTMLElement {
 
     static render (el:EmojiPicker):void {
         el.panel = document.createElement('div')
-        el.panel.className = 'emoji-picker__panel'
+        el.panel.className = 'emoji-picker-panel'
         el.panel.setAttribute('popover', 'manual')
 
         el.tabs = document.createElement('div')
-        el.tabs.className = 'emoji-picker__tabs'
+        el.tabs.className = 'emoji-picker-tabs'
         el.tabs.setAttribute('role', 'tablist')
 
         el.searchInput = document.createElement('input')
-        el.searchInput.className = 'emoji-picker__search'
+        el.searchInput.className = 'emoji-picker-search'
         el.searchInput.type = 'search'
         el.searchInput.placeholder = 'Search emoji'
         el.searchInput.setAttribute(
@@ -110,16 +110,16 @@ export class EmojiPicker extends HTMLElement {
         })
 
         el.tones = document.createElement('div')
-        el.tones.className = 'emoji-picker__tones'
+        el.tones.className = 'emoji-picker-tones'
         el.tones.setAttribute('role', 'radiogroup')
         el.tones.setAttribute('aria-label', 'Skin tone')
 
         el.grid = document.createElement('div')
-        el.grid.className = 'emoji-picker__grid'
+        el.grid.className = 'emoji-picker-grid'
         el.grid.setAttribute('role', 'grid')
 
         el.preview = document.createElement('div')
-        el.preview.className = 'emoji-picker__preview'
+        el.preview.className = 'emoji-picker-preview'
         el.preview.setAttribute('role', 'status')
         el.preview.setAttribute('aria-live', 'polite')
 
@@ -199,7 +199,7 @@ export class EmojiPicker extends HTMLElement {
         for (const category of tabs) {
             const tab = document.createElement('button')
             tab.type = 'button'
-            tab.className = 'emoji-picker__tab'
+            tab.className = 'emoji-picker-tab'
             tab.setAttribute('role', 'tab')
             tab.setAttribute('aria-label', category.label)
             tab.setAttribute(
@@ -241,7 +241,7 @@ export class EmojiPicker extends HTMLElement {
 
         if (!emojis.length) {
             const empty = document.createElement('div')
-            empty.className = 'emoji-picker__empty'
+            empty.className = 'emoji-picker-empty'
             empty.textContent = this.category === RECENTS.id
                 ? 'No recently used emoji'
                 : 'No emoji in this category'
@@ -253,7 +253,7 @@ export class EmojiPicker extends HTMLElement {
             const displayed = this.withSelectedTone(emoji)
             const button = document.createElement('button')
             button.type = 'button'
-            button.className = 'emoji-picker__emoji'
+            button.className = 'emoji-picker-emoji'
             button.setAttribute('role', 'gridcell')
             button.setAttribute(
                 'aria-label', displayed.label ?? displayed.name
@@ -358,7 +358,7 @@ export class EmojiPicker extends HTMLElement {
         TONE_SWATCHES.forEach((swatch, tone) => {
             const button = document.createElement('button')
             button.type = 'button'
-            button.className = 'emoji-picker__tone'
+            button.className = 'emoji-picker-tone'
             button.setAttribute('role', 'radio')
             button.setAttribute('aria-label', TONE_LABELS[tone] ?? swatch)
             button.setAttribute('aria-checked', String(tone === this.skinTone))
@@ -411,11 +411,11 @@ export class EmojiPicker extends HTMLElement {
 
     private showPreview (emoji:EmojiEntry):void {
         const glyph = document.createElement('span')
-        glyph.className = 'emoji-picker__preview-glyph'
+        glyph.className = 'emoji-picker-preview-glyph'
         glyph.textContent = emoji.emoji
 
         const name = document.createElement('span')
-        name.className = 'emoji-picker__preview-name'
+        name.className = 'emoji-picker-preview-name'
         name.textContent = emoji.name
 
         this.preview.replaceChildren(glyph, name)

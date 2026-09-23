@@ -1,21 +1,21 @@
 /**
- * <emoi-input>
+ * <emoji-input>
  *
  * Wrap a <textarea> or <input>. When the user types `:` followed by
  * two or more characters, a popover opens at the caret with matching
  * emoji. Arrow keys move, Enter/Tab insert, Escape closes.
  *
  * No shadow DOM. The list is a plain child element with class
- * `emoji-search__list`; import `index.css` alongside the component
+ * `emoji-search-list`; import `index.css` alongside the component
  * and use `--emoji-search-*` custom properties for theming.
  *
- *   <emoi-input>
+ *   <emoji-input>
  *     <textarea></textarea>
- *   </emoi-input>
+ *   </emoji-input>
  *
  * Or attach to a field that lives elsewhere:
  *
- *   const el = document.querySelector('emoi-input')
+ *   const el = document.querySelector('emoji-input')
  *   el.attach(document.querySelector('#chat'))
  *
  * Pass your own data (e.g. from `unicode-emoji-json` or `emojibase-data`)
@@ -69,37 +69,38 @@ export class EmojiInput extends HTMLElement {
         }
     }
 
-    static render (el:EmojiInput):void {
-        const list = document.createElement('div')
-        list.className = 'emoji-search__list'
-        list.setAttribute('popover', 'manual')
-        list.setAttribute('role', 'listbox')
-        list.id = `${el.uid}-list`
-        el.list = list
+    static render (uid:string):string {
+        return '<div class="emoji-search-list"'
+            + ' popover="manual"'
+            + ' role="listbox"'
+            + ` id="${uid}-list"`
+            + '></div>'
+    }
 
-        list.addEventListener(
+    private hydrate ():void {
+        this.list.addEventListener(
             'pointerdown',
             ev => ev.preventDefault(),
         )
-        list.addEventListener('click', ev => {
+        this.list.addEventListener('click', ev => {
             const row = (ev.target as HTMLElement)
                 .closest<HTMLElement>(
-                    '.emoji-search__item'
+                    '.emoji-search-item'
                 )
             if (!row) return
-            el.index = Number(row.dataset.index)
-            el.commit()
+            this.index = Number(row.dataset.index)
+            this.commit()
         })
-        list.addEventListener('pointermove', ev => {
+        this.list.addEventListener('pointermove', ev => {
             const row = (ev.target as HTMLElement)
                 .closest<HTMLElement>(
-                    '.emoji-search__item'
+                    '.emoji-search-item'
                 )
             if (!row) return
             const i = Number(row.dataset.index)
-            if (i !== el.index) {
-                el.index = i
-                el.paintSelection()
+            if (i !== this.index) {
+                this.index = i
+                this.paintSelection()
             }
         })
     }
@@ -124,7 +125,13 @@ export class EmojiInput extends HTMLElement {
 
     connectedCallback ():void {
         const root = this.getRootNode() as Document|ShadowRoot
-        if (!this.list) EmojiInput.render(this)
+        if (!this.list) {
+            const wrapper = document.createElement('div')
+            wrapper.innerHTML = EmojiInput.render(this.uid)
+            this.list =
+                wrapper.firstElementChild as HTMLElement
+            this.hydrate()
+        }
         if (!this.list.isConnected) this.append(this.list)
 
         const forId = this.getAttribute('for')
@@ -278,7 +285,7 @@ export class EmojiInput extends HTMLElement {
         list.replaceChildren()
         if (!this.results.length) {
             const empty = document.createElement('div')
-            empty.className = 'emoji-search__empty'
+            empty.className = 'emoji-search-empty'
             empty.textContent = `No emoji matching :${this.query}`
             list.append(empty)
             return
@@ -286,17 +293,17 @@ export class EmojiInput extends HTMLElement {
         const q = this.query.toLowerCase()
         this.results.forEach((e, i) => {
             const row = document.createElement('div')
-            row.className = 'emoji-search__item'
+            row.className = 'emoji-search-item'
             row.setAttribute('role', 'option')
             row.id = `${this.uid}-opt-${i}`
             row.dataset.index = String(i)
 
             const glyph = document.createElement('span')
-            glyph.className = 'emoji-search__glyph'
+            glyph.className = 'emoji-search-glyph'
             glyph.textContent = e.emoji
 
             const name = document.createElement('span')
-            name.className = 'emoji-search__name'
+            name.className = 'emoji-search-name'
             const at = e.name.toLowerCase().indexOf(q)
             if (at >= 0) {
                 name.append(
@@ -317,7 +324,7 @@ export class EmojiInput extends HTMLElement {
     }
 
     private paintSelection ():void {
-        const rows = this.list.querySelectorAll<HTMLElement>('.emoji-search__item')
+        const rows = this.list.querySelectorAll<HTMLElement>('.emoji-search-item')
         rows.forEach((row, i) => {
             row.setAttribute('aria-selected', String(i === this.index))
         })
@@ -358,7 +365,7 @@ EmojiInput.define()
 
 declare global {
     interface HTMLElementTagNameMap {
-        'emoi-input':EmojiInput;
+        'emoji-input':EmojiInput;
     }
     interface HTMLElementEventMap {
         'emoji-select':CustomEvent<EmojiSelectDetail>;

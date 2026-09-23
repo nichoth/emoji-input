@@ -60,6 +60,29 @@ const SMALL_SET:EmojiEntry[] = [
     },
 ]
 
+// -- Static render (Node-compatible) ---------------------------
+
+test('static render returns an HTML string', t => {
+    const html = EmojiInput.render('test-uid')
+    t.equal(typeof html, 'string', 'returns a string')
+    t.ok(
+        html.includes('emoji-search-list'),
+        'contains the list class'
+    )
+    t.ok(
+        html.includes('role="listbox"'),
+        'has listbox role'
+    )
+    t.ok(
+        html.includes('id="test-uid-list"'),
+        'uses the uid for the element id'
+    )
+    t.ok(
+        html.includes('popover="manual"'),
+        'has popover attribute'
+    )
+})
+
 // -- Data structure --------------------------------------------
 
 test('DEFAULT_EMOJIS has expected structure', t => {
@@ -143,8 +166,8 @@ test('shared search ranks keyword prefixes after name matches', t => {
 // -- Registration and setup ------------------------------------
 
 test('custom element is registered', t => {
-    const ctor = customElements.get('emoi-input')
-    t.ok(ctor, 'emoi-input tag is defined')
+    const ctor = customElements.get('emoji-input')
+    t.ok(ctor, 'emoji-input tag is defined')
     t.equal(ctor, EmojiInput, 'maps to EmojiInput class')
 })
 
@@ -226,7 +249,7 @@ test('emoji-button positions the picker below itself', t => {
         '[role="tab"][aria-label="People"]'
     )?.click()
     const panel = picker.querySelector(
-        '.emoji-picker__panel'
+        '.emoji-picker-panel'
     ) as HTMLElement
     const btnRect = button.getBoundingClientRect()
     const panelRect = panel.getBoundingClientRect()
@@ -276,7 +299,7 @@ test('main entrypoint exports all component classes', t => {
     )
     t.equal(
         EmojiInput,
-        customElements.get('emoi-input'),
+        customElements.get('emoji-input'),
         'main entrypoint exports EmojiInput'
     )
 })
@@ -685,7 +708,7 @@ test('auto-attaches to child textarea', t => {
 test('attaches to child added after connect', async t => {
     t.plan(1)
     const el = document.createElement(
-        'emoi-input'
+        'emoji-input'
     ) as EmojiInput
     document.body.appendChild(el)
     const textarea = document.createElement('textarea')
@@ -705,7 +728,7 @@ test('attaches via for attribute', t => {
     document.body.appendChild(textarea)
 
     const el = document.createElement(
-        'emoi-input'
+        'emoji-input'
     ) as EmojiInput
     el.setAttribute('for', 'test-external-field')
     el.emojis = SMALL_SET
@@ -726,7 +749,7 @@ test('attaches via for attribute', t => {
 
 test('works with input element', t => {
     const el = document.createElement(
-        'emoi-input'
+        'emoji-input'
     ) as EmojiInput
     const input = document.createElement('input')
     input.type = 'text'
@@ -852,7 +875,7 @@ test('shows empty state for no matches', t => {
     const items = listItems(el)
     t.equal(items.length, 0, 'no result items')
     const empty = el.querySelector(
-        '.emoji-search__empty'
+        '.emoji-search-empty'
     )
     t.ok(empty, 'empty state element shown')
     el.remove()
@@ -1165,9 +1188,7 @@ function setup (emojis?:EmojiEntry[]):{
     el:EmojiInput;
     textarea:HTMLTextAreaElement;
 } {
-    const el = document.createElement(
-        'emoi-input'
-    ) as EmojiInput
+    const el = document.createElement('emoji-input') as EmojiInput
     const textarea = document.createElement('textarea')
     el.appendChild(textarea)
     document.body.appendChild(el)
@@ -1199,6 +1220,6 @@ function listItems (
     el:EmojiInput,
 ):NodeListOf<HTMLElement> {
     return el.querySelectorAll(
-        '.emoji-search__item'
+        '.emoji-search-item'
     )
 }
