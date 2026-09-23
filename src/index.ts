@@ -149,8 +149,8 @@ export class EmojiInput extends HTMLElement {
     attach (field:Field):void {
         this.detach()
         this.field = field
-        field.addEventListener('input', this.onInput)
-        ;(field as HTMLElement).addEventListener('keydown', this.onKeydown)
+        field.addEventListener('input', this.onInput);
+        (field as HTMLElement).addEventListener('keydown', this.onKeydown)
         field.addEventListener('blur', this.close)
         field.addEventListener('scroll', this.reposition)
         field.setAttribute('aria-autocomplete', 'list')
@@ -162,8 +162,8 @@ export class EmojiInput extends HTMLElement {
         if (!this.field) return
         this.close()
         const f = this.field
-        f.removeEventListener('input', this.onInput)
-        ;(f as HTMLElement).removeEventListener('keydown', this.onKeydown)
+        f.removeEventListener('input', this.onInput);
+        (f as HTMLElement).removeEventListener('keydown', this.onKeydown)
         f.removeEventListener('blur', this.close)
         f.removeEventListener('scroll', this.reposition)
         window.removeEventListener('resize', this.reposition)

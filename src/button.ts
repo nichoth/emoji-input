@@ -11,33 +11,34 @@ const ICON_SVG = `<svg class="emoji-button"
         stroke-linecap="round" stroke-width="2"/>
 </svg>`
 
-export class EmojiButton extends HTMLElement {
+const Base = typeof HTMLElement !== 'undefined' ?
+    HTMLElement :
+    class {} as unknown as typeof HTMLElement
+
+export class EmojiButton extends Base {
     static TAG = 'emoji-button'
+    private button:HTMLButtonElement|null = null
 
     static define (tag = EmojiButton.TAG):void {
+        if (typeof window === 'undefined' || !window.customElements) return
+
         if (!customElements.get(tag)) {
             customElements.define(tag, EmojiButton)
         }
     }
 
-    static render ():HTMLButtonElement {
-        const button = document.createElement('button')
-        button.className = 'emoji-button'
-        button.type = 'button'
-        button.setAttribute('aria-label', 'Open emoji picker')
-        button.innerHTML = ICON_SVG
-        return button
+    static render ():string {
+        return `<button class="emoji-button" type="button"
+            aria-label="Open emoji picker">${ICON_SVG}</button>`
     }
-
-    private button:HTMLButtonElement|null = null
 
     connectedCallback ():void {
         const btn = this.querySelector('button.emoji-button') as HTMLButtonElement
         if (btn) {
             this.button = btn
         } else {
-            this.button = EmojiButton.render()
-            this.append(this.button)
+            this.innerHTML = EmojiButton.render()
+            this.button = this.querySelector('button')!
         }
 
         this.button!.addEventListener('click', this.onClick)
