@@ -1,0 +1,453 @@
+
+> @substrate-system/emoji-input@0.0.0 test
+> npm run build && node test/smoke.mjs && esbuild ./test/index.ts --bundle --loader:.css=text | tapout
+
+
+> @substrate-system/emoji-input@0.0.0 build
+> mkdir -p ./dist && rm -rf ./dist/* && npm run build-cjs && npm run build-esm && npm run build-esm:min && npm run build-cjs:min
+
+
+> @substrate-system/emoji-input@0.0.0 build-cjs
+> esbuild src/*.ts --format=cjs --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --out-extension:.js=.cjs --loader:.css=text --sourcemap
+
+
+  dist/picker.cjs         16.8kb
+  dist/index.cjs          11.2kb
+  dist/data.cjs            2.8kb
+  dist/button.cjs          2.7kb
+  dist/search.cjs          1.5kb
+  dist/placement.cjs       1.5kb
+  dist/picker.cjs.map     31.4kb
+  dist/index.cjs.map      20.8kb
+  dist/data.cjs.map        3.2kb
+  dist/button.cjs.map      3.1kb
+  dist/search.cjs.map      1.3kb
+  dist/placement.cjs.map   1.2kb
+
+⚡ Done in 10ms
+
+> @substrate-system/emoji-input@0.0.0 build-esm
+> esbuild src/*.ts --format=esm --metafile=dist/meta.json --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --loader:.css=text --sourcemap && tsc --emitDeclarationOnly --project tsconfig.build.json --outDir dist
+
+
+  dist/picker.js         15.8kb
+  dist/index.js          10.3kb
+  dist/button.js          1.8kb
+  dist/data.js            1.3kb
+  dist/search.js          703b 
+  dist/placement.js       615b 
+  dist/picker.js.map     31.3kb
+  dist/index.js.map      20.8kb
+  dist/data.js.map        3.2kb
+  dist/button.js.map      3.1kb
+  dist/search.js.map      1.3kb
+  dist/placement.js.map   1.1kb
+
+⚡ Done in 6ms
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es5.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2015.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2016.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2017.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2018.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2019.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2020.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2021.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2022.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.dom.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.webworker.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2015.core.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2015.collection.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2015.generator.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2015.iterable.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2015.promise.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2015.proxy.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2015.reflect.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2015.symbol.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2016.array.include.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2016.intl.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2017.arraybuffer.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2017.date.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2017.object.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2017.sharedmemory.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2017.string.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2017.intl.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2017.typedarrays.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2018.asyncgenerator.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2018.asynciterable.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2018.intl.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2018.promise.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2018.regexp.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2019.array.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2019.object.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2019.string.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2019.symbol.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2019.intl.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2020.bigint.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2020.date.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2020.promise.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2020.sharedmemory.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2020.string.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2020.symbol.wellknown.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2020.intl.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2020.number.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2021.promise.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2021.string.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2021.weakref.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2021.intl.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2022.array.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2022.error.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2022.intl.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2022.object.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2022.string.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.es2022.regexp.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.decorators.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/typescript/lib/lib.decorators.legacy.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/@emoji-mart/data/sets/15/native.json
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/src/data.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/src/search.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/src/picker.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/src/button.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/src/placement.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/src/index.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/lib.es5.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/vite/types/hmrPayload.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/vite/types/customEvent.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/vite/types/hot.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/vite/types/importGlob.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/vite/types/importMeta.d.ts
+/Users/nick/code/emoji-input.correctness-audit-fixes-05-light-dismiss-and-focus-restoration/node_modules/vite/client.d.ts
+
+> @substrate-system/emoji-input@0.0.0 build-esm:min
+> esbuild ./src/*.ts --format=esm --keep-names --bundle --tsconfig=tsconfig.build.json --minify --out-extension:.js=.min.js --outdir=./dist --loader:.css=text --sourcemap
+
+
+  dist/index.min.js          442.4kb
+  dist/picker.min.js         435.8kb
+  dist/data.min.js           424.4kb
+  dist/button.min.js           1.3kb
+  dist/search.min.js           397b 
+  dist/placement.min.js        353b 
+  dist/index.min.js.map      902.7kb
+  dist/picker.min.js.map     881.2kb
+  dist/data.min.js.map       846.3kb
+  dist/button.min.js.map       3.1kb
+  dist/search.min.js.map       1.4kb
+  dist/placement.min.js.map    1.2kb
+
+⚡ Done in 37ms
+
+> @substrate-system/emoji-input@0.0.0 build-cjs:min
+> esbuild src/*.ts --format=cjs --minify --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --out-extension:.js=.min.cjs --loader:.css=text --sourcemap
+
+
+  dist/picker.min.cjs         10.6kb
+  dist/index.min.cjs           7.3kb
+  dist/button.min.cjs          1.8kb
+  dist/data.min.cjs            1.3kb
+  dist/search.min.cjs          830b 
+  dist/placement.min.cjs       780b 
+  dist/picker.min.cjs.map     30.9kb
+  dist/index.min.cjs.map      20.6kb
+  dist/data.min.cjs.map        3.5kb
+  dist/button.min.cjs.map      3.1kb
+  dist/search.min.cjs.map      1.5kb
+  dist/placement.min.cjs.map   1.3kb
+
+⚡ Done in 6ms
+TAP version 13
+# Node smoke tests
+  ok - ESM import of main entry succeeds
+  ok - ESM import of /picker succeeds
+  ok - ESM import of /button succeeds
+  ok - CJS require of main entry succeeds
+  ok - CJS require of /picker succeeds
+  ok - CJS require of /button succeeds
+  ok - main entry exports EmojiInput, EmojiPicker, EmojiButton
+  ok - /button subpath exports only EmojiButton
+
+1..8
+# pass 8
+# fail 0
+# Running tests in chromium
+TAP version 13
+# static render returns an HTML string
+ok 1 returns a string
+ok 2 contains the list class
+ok 3 has listbox role
+ok 4 listbox has an accessible label
+ok 5 uses the uid for the element id
+ok 6 has popover attribute
+# DEFAULT_EMOJIS has expected structure
+ok 7 contains the complete emoji-mart set
+ok 8 emoji field is a string
+ok 9 name field is a string
+ok 10 keywords is an array
+# DEFAULT_EMOJIS includes category and skin data
+ok 11 includes butter
+ok 12 uses the native butter glyph
+ok 13 includes a category
+ok 14 includes categories
+ok 15 includes skin tone variants
+ok 16 keeps variant glyphs
+# DEFAULT_EMOJIS entries all have emoji and name
+ok 17 no entries missing emoji or name
+# shared search ranks name prefixes before substrings
+ok 18 prefix matches rank before substring matches
+# shared search ranks keyword prefixes after name matches
+ok 19 keyword prefix matches rank after name matches
+# custom element is registered
+ok 20 emoji-input tag is defined
+ok 21 maps to EmojiInput class
+# emoji-picker custom element is registered
+ok 22 emoji-picker tag is defined
+ok 23 maps to EmojiPicker class
+ok 24 has default emoji data
+ok 25 starts closed
+# emoji-button custom element renders an accessible smiley button
+ok 26 emoji-button tag is defined
+ok 27 maps to EmojiButton class
+ok 28 renders a native button
+ok 29 button does not submit forms
+ok 30 renders the smiley SVG inline
+ok 31 has a visually-hidden label
+# emoji-button uses currentColor
+ok 32 the SVG inherits its fill from currentColor
+# emoji-button opens the picker named by for
+ok 33 click calls the referenced picker open method
+# emoji-button positions the picker below itself
+ok 34 picker opens
+ok 35 picker top is at or below the button bottom
+ok 36 picker left aligns with the button left
+# button subpath exports only EmojiButton
+ok 37 button subpath is declared
+ok 38 button import subpath points to the ESM build
+ok 39 button require subpath points to the CommonJS build
+# main entrypoint exports all component classes
+ok 40 main entrypoint exports EmojiPicker
+ok 41 main entrypoint exports EmojiButton
+ok 42 main entrypoint exports EmojiInput
+# emoji-picker defaults to the recently used tab
+ok 43 recently used tab is selected by default
+ok 44 people tab is not selected by default
+# emoji-picker renders category tabs and an eight-column grid
+ok 45 has recents and eight category tabs
+ok 46 recents is the first tab
+ok 47 people is the first emoji category
+ok 48 renders an emoji grid
+ok 49 category tab filters the grid
+# emoji-picker stays open when switching categories
+ok 50 picker is open before tab click
+ok 51 picker stays open after clicking a category tab
+# emoji-picker grid exists when open
+ok 52 grid exists
+# emoji-picker grid has an accessible label
+ok 53 grid has aria-label
+# emoji-picker search controls the grid
+ok 54 search has aria-controls
+ok 55 search aria-controls references the grid
+# emoji-picker moves focus to search on open
+ok 56 search input is focused after open
+# emoji-picker returns focus to trigger on close
+ok 57 focus returns to the trigger element
+# open() from bubbling click handler leaves isOpen true
+ok 58 picker stays open after bubbling click
+# Escape with focus inside panel closes and restores focus
+ok 59 picker is open
+ok 60 focus is inside panel
+ok 61 picker closed
+ok 62 focus returned to trigger
+# programmatic close() with focus inside restores trigger
+ok 63 focus returned to trigger on programmatic close
+# selection with for field focuses that field
+ok 64 focus moved to the for field after selection
+ok 65 emoji was inserted
+# selection without for field focuses trigger
+ok 66 focus returned to trigger after selection
+# isOpen false after light dismiss
+ok 67 starts open
+ok 68 isOpen is false after toggle event
+# removing picker while open does not move focus
+ok 69 focus stays on other after disconnect
+# button opens picker with custom tag name
+ok 70 button opened the custom-tagged picker
+# emoji-picker tabs use roving tabindex
+ok 71 selected tab has tabindex 0
+ok 72 non-selected tab has tabindex -1
+# emoji-picker tabs navigate with arrow keys
+ok 73 ArrowRight activates the next tab
+ok 74 ArrowRight moves focus to the next tab
+# emoji-picker search filters visible emoji
+ok 75 renders a search input
+ok 76 shows the matching emoji
+ok 77 hides emoji that do not match the query
+# emoji-picker emits emoji-select and closes after selection
+ok 78 emits selection detail
+ok 79 emits the selected emoji
+ok 80 emits the current search query
+ok 81 closes after selecting an emoji
+# emoji-picker supports keyboard grid navigation and dismissal
+ok 82 ArrowRight moves to the next emoji
+ok 83 ArrowDown moves by one grid row
+ok 84 Enter selects the focused emoji
+ok 85 Enter closes the picker
+ok 86 Escape closes the picker
+# Enter on a category tab activates it without emoji-select
+ok 87 focus is on the People tab
+ok 88 Enter on tab does not emit emoji-select
+ok 89 People tab is now selected
+ok 90 picker stays open
+# Enter on a skin tone radio checks it without emoji-select
+ok 91 has skin tone radios
+ok 92 Enter on radio does not emit emoji-select
+ok 93 radio is now checked
+ok 94 picker stays open
+# ArrowLeft in search box stays in search box
+ok 95 search is focused after open
+ok 96 focus stays in search after ArrowLeft
+ok 97 focus stays in search after ArrowRight
+ok 98 focus stays in search after ArrowUp
+# ArrowDown in search box moves focus into grid
+ok 99 focus moves to the first gridcell
+# Enter in search with query selects first visible emoji
+ok 100 emits emoji-select
+ok 101 selects the first visible emoji matching the query
+# ArrowRight on tone radio moves and checks next radio
+ok 102 has at least 3 radios
+ok 103 first radio is focused
+ok 104 focus moved to second radio
+ok 105 second radio is now checked
+ok 106 first radio is unchecked
+# after outside click, focus stays on clicked element
+ok 107 picker is open
+ok 108 picker reports closed after light dismiss
+ok 109 focus stays on the clicked element
+# emoji-picker inline mode stays in document flow
+ok 110 inline mode still renders the picker grid
+ok 111 inline mode removes popover behavior
+ok 112 inline mode uses in-flow positioning
+# emoji-picker stores and restores capped recently used emoji
+ok 113 caps recents at 24 entries
+ok 114 most recently selected emoji is first
+ok 115 duplicate selection moves the emoji to the front
+ok 116 restores recents from localStorage
+# emoji-picker applies and restores a selected skin tone
+ok 117 has an emoji with skin tone variants
+ok 118 renders six skin tone swatches
+ok 119 uses the selected skin tone
+ok 120 emits the selected skin tone variant
+ok 121 restores the skin tone from localStorage
+# emoji-picker updates its preview when an emoji is hovered
+ok 122 renders a preview region
+ok 123 preview shows the hovered emoji
+ok 124 preview shows the hovered emoji name
+# emoji-picker inserts into the field named by for
+ok 125 inserts the selected emoji at the field caret
+# element has correct defaults
+ok 126 minChars defaults to 2
+ok 127 maxResults defaults to 8
+ok 128 has default emoji data
+# auto-attaches to child textarea
+ok 129 textarea gets aria-autocomplete=list
+# attaches to child added after connect
+ok 130 MutationObserver picks up late child
+# attaches via for attribute
+ok 131 external field gets aria-autocomplete
+ok 132 popover opens for external field
+# works with input element
+ok 133 popover opens for input element
+ok 134 emoji inserted into input
+# popover opens on valid trigger
+ok 135 opens for :sm after space
+# popover opens at start of input
+ok 136 opens when colon at position 0
+# does not open for short query
+ok 137 stays closed with 1 char (minChars=2)
+# does not trigger after word character
+ok 138 no trigger when colon follows letter
+# triggers after opening paren
+ok 139 triggers after (
+# closes when trigger disappears
+ok 140 opens first
+ok 141 closes when no trigger
+# search is case-insensitive
+ok 142 opens for uppercase query
+ok 143 finds results
+# finds results by name prefix
+ok 144 matches name prefixes
+# finds results by name substring
+ok 145 matches name substrings
+# finds results by keyword
+ok 146 matches keywords
+# respects maxResults
+ok 147 results capped at maxResults
+# shows empty state for no matches
+ok 148 popover opens even with no matches
+ok 149 no result items
+ok 150 empty state element shown
+# first item selected by default
+ok 151 first item is selected
+# ArrowDown moves selection forward
+ok 152 first item deselected
+ok 153 second item selected
+# ArrowUp wraps from first to last
+ok 154 last item selected after wrap
+# ArrowDown wraps from last to first
+ok 155 wraps back to first
+# aria-activedescendant tracks selection
+ok 156 set when popover opens
+ok 157 changes on navigation
+# Enter commits the selected emoji
+ok 158 popover closes
+ok 159 emoji inserted
+ok 160 trigger text replaced
+# Tab commits the selected emoji
+ok 161 popover closes
+ok 162 emoji inserted via Tab
+# Escape closes without inserting
+ok 163 popover open
+ok 164 popover closes
+ok 165 original text preserved
+# committed emoji has trailing space
+ok 166 space after emoji
+# preserves text before trigger
+ok 167 preceding text kept
+ok 168 emoji inserted after prefix
+# navigated commit inserts correct emoji
+ok 169 second result emoji inserted
+# click on item commits emoji
+ok 170 has items to click
+ok 171 closes after click
+ok 172 emoji inserted on click
+# emoji-select event fires on commit
+ok 173 has emoji detail
+ok 174 correct emoji name
+ok 175 correct query string
+# emoji-select event bubbles
+ok 176 event bubbles to body
+# minChars can be lowered
+ok 177 opens with 1 char when minChars=1
+# custom emoji data
+ok 178 finds custom emoji
+ok 179 custom emoji inserted
+# detach prevents further triggers
+ok 180 no popover after detach
+# re-attach after detach
+ok 181 works after re-attach
+# popover re-opens after close
+ok 182 opens first time
+ok 183 closes on Escape
+ok 184 opens again with new query
+# aria-controls set and cleared
+ok 185 set when open
+ok 186 removed on close
+# disconnectedCallback cleans up
+ok 187 opens while connected
+ok 188 no trigger after disconnect
+
+1..188
+# tests 188
+# pass  188
+
+# ok
+Tests auto-finished (no explicit completion detected)

@@ -45,12 +45,15 @@ emoji-picker {
 }
 
 .emoji-picker-grid {
-    display: grid;
-    grid-template-columns: repeat(8, minmax(0, 1fr));
-    gap: var(--emoji-picker-grid-gap, 2px);
     margin-top: 8px;
     max-height: var(--emoji-picker-grid-height, 300px);
     overflow-y: auto;
+
+    & [role="row"] {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        gap: var(--emoji-picker-grid-gap, 2px);
+    }
 }
 
 .emoji-picker-search {

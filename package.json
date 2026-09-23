@@ -1,5 +1,5 @@
 {
-  "private": true,
+  "name": "@substrate-system/emoji-input",
   "type": "module",
   "version": "0.0.0",
   "main": "dist/index.js",
@@ -19,6 +19,11 @@
       "import": "./dist/button.js",
       "require": "./dist/button.cjs"
     },
+    "./index.css": "./dist/index.css",
+    "./picker.css": "./dist/picker.css",
+    "./button.css": "./dist/button.css",
+    "./css": "./dist/emoji-input.css",
+    "./css/min": "./dist/emoji-input.min.css",
     "./*": {
       "import": [
         "./dist/*.js",
@@ -32,15 +37,17 @@
   },
   "scripts": {
     "lint": "eslint \"./**/*.{ts,js}\"",
-    "test": "npm run build && esbuild ./test/index.ts --bundle --loader:.css=text | tapout",
+    "test": "npm run build && node test/smoke.mjs && esbuild ./test/index.ts --bundle --loader:.css=text | tapout",
     "build-cjs": "esbuild src/*.ts --format=cjs --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --out-extension:.js=.cjs --loader:.css=text --sourcemap",
     "build-cjs:min": "esbuild src/*.ts --format=cjs --minify --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --out-extension:.js=.min.cjs --loader:.css=text --sourcemap",
     "build-esm": "esbuild src/*.ts --format=esm --metafile=dist/meta.json --keep-names --tsconfig=tsconfig.build.json --outdir=./dist --loader:.css=text --sourcemap && tsc --emitDeclarationOnly --project tsconfig.build.json --outDir dist",
     "build-esm:min": "esbuild ./src/*.ts --format=esm --keep-names --bundle --tsconfig=tsconfig.build.json --minify --out-extension:.js=.min.js --outdir=./dist --loader:.css=text --sourcemap",
     "build-example": "mkdir -p ./public && rm -rf ./public/* && VITE_DEBUG_MODE=staging vite --mode staging --base=\"/repo-name\" build",
     "build-docs": "typedoc ./src/index.ts",
-    "build": "mkdir -p ./dist && rm -rf ./dist/* && npm run build-cjs && npm run build-esm && npm run build-esm:min && npm run build-cjs:min",
+    "build-css": "node scripts/build-css.mjs",
+    "build": "mkdir -p ./dist && rm -rf ./dist/* && npm run build-cjs && npm run build-esm && npm run build-esm:min && npm run build-cjs:min && npm run build-css",
     "start": "vite",
+    "ssr": "esbuild example/ssr.ts --bundle --platform=node --format=esm --loader:.css=text --outfile=node_modules/.cache/emoji-input/ssr.mjs --log-level=warning && node --input-type=module -e \"import { render } from './node_modules/.cache/emoji-input/ssr.mjs'; console.log(render())\"",
     "toc": "markdown-toc --maxdepth 3 -i README.md",
     "preversion": "npm run lint",
     "version": "npm run toc && auto-changelog -p --template keepachangelog --breaking-pattern 'BREAKING CHANGE:' && git add CHANGELOG.md README.md",
@@ -48,8 +55,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@emoji-mart/data": "^1.2.1",
-    "microtags": "^0.0.12"
+    "@emoji-mart/data": "^1.2.1"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.5",

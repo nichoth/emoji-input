@@ -280,6 +280,169 @@ test('emoji-button positions the picker below itself', t => {
     wrapper.remove()
 })
 
+test('picker panel stays inside viewport when anchor is near bottom', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.emojis = SMALL_SET
+
+    const anchor = document.createElement('button')
+    anchor.style.position = 'fixed'
+    anchor.style.bottom = '10px'
+    anchor.style.left = '100px'
+    anchor.textContent = 'trigger'
+    document.body.append(anchor, picker)
+
+    picker.open(anchor)
+    t.ok(picker.isOpen, 'picker opens')
+
+    const panel = picker.querySelector(
+        '.emoji-picker-panel'
+    ) as HTMLElement
+    const panelRect = panel.getBoundingClientRect()
+
+    t.ok(
+        panelRect.bottom <= window.innerHeight,
+        'panel bottom is within viewport height'
+    )
+
+    picker.close()
+    anchor.remove()
+    picker.remove()
+})
+
+test('picker panel stays inside viewport when anchor is near right edge', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.emojis = SMALL_SET
+
+    const anchor = document.createElement('button')
+    anchor.style.position = 'fixed'
+    anchor.style.top = '10px'
+    anchor.style.right = '0px'
+    anchor.textContent = 'trigger'
+    document.body.append(anchor, picker)
+
+    picker.open(anchor)
+    t.ok(picker.isOpen, 'picker opens')
+
+    const panel = picker.querySelector(
+        '.emoji-picker-panel'
+    ) as HTMLElement
+    const panelRect = panel.getBoundingClientRect()
+
+    t.ok(
+        panelRect.right <= window.innerWidth,
+        'panel right is within viewport width'
+    )
+
+    picker.close()
+    anchor.remove()
+    picker.remove()
+})
+
+test('picker opens below anchor when there is room', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.emojis = SMALL_SET
+
+    const anchor = document.createElement('button')
+    anchor.style.position = 'fixed'
+    anchor.style.top = '10px'
+    anchor.style.left = '10px'
+    anchor.textContent = 'trigger'
+    document.body.append(anchor, picker)
+
+    picker.open(anchor)
+    const panel = picker.querySelector(
+        '.emoji-picker-panel'
+    ) as HTMLElement
+    const anchorRect = anchor.getBoundingClientRect()
+    const panelRect = panel.getBoundingClientRect()
+
+    t.ok(
+        panelRect.top >= anchorRect.bottom - 1,
+        'panel top is at or below anchor bottom'
+    )
+
+    picker.close()
+    anchor.remove()
+    picker.remove()
+})
+
+test('picker repositions on window resize while open', async t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.emojis = SMALL_SET
+
+    const anchor = document.createElement('button')
+    anchor.style.position = 'fixed'
+    anchor.style.top = '10px'
+    anchor.style.left = '10px'
+    anchor.textContent = 'trigger'
+    document.body.append(anchor, picker)
+
+    picker.open(anchor)
+    const panel = picker.querySelector(
+        '.emoji-picker-panel'
+    ) as HTMLElement
+    const rectBefore = panel.getBoundingClientRect()
+
+    anchor.style.top = '50px'
+    anchor.style.left = '50px'
+    window.dispatchEvent(new Event('resize'))
+    await sleep(50)
+
+    const rectAfter = panel.getBoundingClientRect()
+    t.ok(
+        rectAfter.top !== rectBefore.top
+            || rectAfter.left !== rectBefore.left,
+        'panel position updated after resize'
+    )
+
+    picker.close()
+    anchor.remove()
+    picker.remove()
+})
+
+test('after close no reposition listener remains', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.emojis = SMALL_SET
+
+    const anchor = document.createElement('button')
+    anchor.style.position = 'fixed'
+    anchor.style.top = '10px'
+    anchor.style.left = '10px'
+    anchor.textContent = 'trigger'
+    document.body.append(anchor, picker)
+
+    picker.open(anchor)
+    picker.close()
+
+    const panel = picker.querySelector(
+        '.emoji-picker-panel'
+    ) as HTMLElement
+    const rectBefore = panel.getBoundingClientRect()
+
+    anchor.style.top = '100px'
+    window.dispatchEvent(new Event('resize'))
+
+    const rectAfter = panel.getBoundingClientRect()
+    t.ok(
+        rectAfter.top === rectBefore.top
+            && rectAfter.left === rectBefore.left,
+        'panel position unchanged after close + resize'
+    )
+
+    anchor.remove()
+    picker.remove()
+})
+
 test('button subpath exports only EmojiButton', t => {
     const buttonExports = packageJson.exports['./button'] as {
         import:string;
@@ -471,6 +634,236 @@ test('emoji-picker returns focus to trigger on close', t => {
     trigger.remove()
 })
 
+test('open() from bubbling click handler leaves isOpen true', t => {
+    const trigger = document.createElement('button')
+    trigger.textContent = 'open picker'
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.append(trigger, picker)
+
+    trigger.addEventListener('click', () => {
+        picker.open(trigger)
+    })
+    trigger.click()
+
+    t.ok(
+        picker.isOpen,
+        'picker stays open after bubbling click'
+    )
+    picker.close()
+    picker.remove()
+    trigger.remove()
+})
+
+test('Escape with focus inside panel closes and restores focus', t => {
+    const trigger = document.createElement('button')
+    trigger.textContent = 'trigger'
+    document.body.append(trigger)
+    trigger.focus()
+
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.append(picker)
+    picker.open(trigger)
+    t.ok(picker.isOpen, 'picker is open')
+
+    const search = picker.querySelector<HTMLElement>(
+        'input[type="search"]'
+    )
+    t.equal(
+        document.activeElement,
+        search,
+        'focus is inside panel'
+    )
+    keydown(picker, 'Escape')
+    t.ok(!picker.isOpen, 'picker closed')
+    t.equal(
+        document.activeElement,
+        trigger,
+        'focus returned to trigger'
+    )
+    picker.remove()
+    trigger.remove()
+})
+
+test('programmatic close() with focus inside restores trigger', t => {
+    const trigger = document.createElement('button')
+    trigger.textContent = 'trigger'
+    document.body.append(trigger)
+    trigger.focus()
+
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.append(picker)
+    picker.open(trigger)
+
+    const search = picker.querySelector<HTMLElement>(
+        'input[type="search"]'
+    )
+    search?.focus()
+    picker.close()
+    t.equal(
+        document.activeElement,
+        trigger,
+        'focus returned to trigger on programmatic close'
+    )
+    picker.remove()
+    trigger.remove()
+})
+
+test('selection with for field focuses that field', t => {
+    const field = document.createElement('textarea')
+    field.id = 'select-focus-target'
+    const trigger = document.createElement('button')
+    trigger.textContent = 'trigger'
+    document.body.append(field, trigger)
+
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.setAttribute('for', field.id)
+    picker.emojis = [{
+        emoji:'🧈',
+        name:'butter',
+        keywords:['food'],
+        category:'people',
+    }]
+    document.body.append(picker)
+    trigger.focus()
+    picker.open(trigger)
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    picker.querySelector<HTMLButtonElement>(
+        '[role="gridcell"] button'
+    )?.click()
+
+    t.equal(
+        document.activeElement,
+        field,
+        'focus moved to the for field after selection'
+    )
+    t.ok(
+        field.value.includes('🧈'),
+        'emoji was inserted'
+    )
+    picker.remove()
+    field.remove()
+    trigger.remove()
+})
+
+test('selection without for field focuses trigger', t => {
+    const trigger = document.createElement('button')
+    trigger.textContent = 'trigger'
+    document.body.append(trigger)
+
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.emojis = [{
+        emoji:'🧈',
+        name:'butter',
+        keywords:['food'],
+        category:'people',
+    }]
+    document.body.append(picker)
+    trigger.focus()
+    picker.open(trigger)
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    picker.querySelector<HTMLButtonElement>(
+        '[role="gridcell"] button'
+    )?.click()
+
+    t.equal(
+        document.activeElement,
+        trigger,
+        'focus returned to trigger after selection'
+    )
+    picker.remove()
+    trigger.remove()
+})
+
+test('isOpen false after light dismiss', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.append(picker)
+    picker.open()
+    t.ok(picker.isOpen, 'starts open')
+
+    const panel = picker.querySelector<HTMLElement>(
+        '.emoji-picker-panel'
+    )
+    panel?.dispatchEvent(new ToggleEvent('toggle', {
+        newState:'closed',
+        oldState:'open',
+    }))
+
+    t.ok(
+        !picker.isOpen,
+        'isOpen is false after toggle event'
+    )
+    picker.remove()
+})
+
+test('removing picker while open does not move focus', t => {
+    const trigger = document.createElement('button')
+    trigger.textContent = 'trigger'
+    const other = document.createElement('button')
+    other.textContent = 'other'
+    document.body.append(trigger, other)
+
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.append(picker)
+    trigger.focus()
+    picker.open(trigger)
+
+    other.focus()
+    picker.remove()
+
+    t.equal(
+        document.activeElement,
+        other,
+        'focus stays on other after disconnect'
+    )
+    trigger.remove()
+    other.remove()
+})
+
+test('button opens picker with custom tag name', t => {
+    class CustomPicker extends EmojiPicker {}
+    const tag = 'custom-emoji-picker'
+    if (!customElements.get(tag)) {
+        customElements.define(tag, CustomPicker)
+    }
+
+    const picker = document.createElement(tag) as EmojiPicker
+    picker.id = 'custom-tag-picker'
+    const btn = document.createElement(
+        'emoji-button'
+    ) as EmojiButton
+    btn.setAttribute('for', picker.id)
+    document.body.append(picker, btn)
+
+    btn.querySelector('button')?.click()
+    t.ok(
+        picker.isOpen,
+        'button opened the custom-tagged picker'
+    )
+    picker.close()
+    picker.remove()
+    btn.remove()
+})
+
 test('emoji-picker tabs use roving tabindex', t => {
     const picker = document.createElement(
         'emoji-picker'
@@ -562,7 +955,9 @@ test('emoji-picker emits emoji-select and closes after selection', t => {
         details.push((event as CustomEvent<EmojiSelectDetail>).detail)
     })
     const emoji = Array.from(
-        picker.querySelectorAll<HTMLButtonElement>('[role="gridcell"]')
+        picker.querySelectorAll<HTMLButtonElement>(
+            '[role="gridcell"] button'
+        )
     ).find(button => button.textContent === '🧈')
     emoji?.click()
 
@@ -585,7 +980,7 @@ test('emoji-picker supports keyboard grid navigation and dismissal', t => {
         '[role="tab"][aria-label="People"]'
     )?.click()
     const buttons = picker.querySelectorAll<HTMLButtonElement>(
-        '[role="gridcell"]'
+        '[role="gridcell"] button'
     )
     const first = buttons[0]
     first?.focus()
@@ -614,15 +1009,233 @@ test('emoji-picker supports keyboard grid navigation and dismissal', t => {
     picker.remove()
 })
 
-test('emoji-picker closes when a popover click lands outside', t => {
+test('Enter on a category tab activates it without emoji-select', t => {
     const picker = document.createElement('emoji-picker') as EmojiPicker
     document.body.appendChild(picker)
     picker.open()
-    t.ok(picker.isOpen, 'opens through the public open method')
 
-    document.body.dispatchEvent(new MouseEvent('click', { bubbles:true }))
-    t.ok(!picker.isOpen, 'outside click closes the popover')
+    let selected = false
+    picker.addEventListener('emoji-select', () => { selected = true })
+
+    const peopleTab = picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )
+    peopleTab?.focus()
+    t.equal(
+        document.activeElement,
+        peopleTab,
+        'focus is on the People tab'
+    )
+    if (peopleTab) {
+        keydown(peopleTab, 'Enter')
+        peopleTab.click()
+    }
+
+    t.ok(!selected, 'Enter on tab does not emit emoji-select')
+    const updatedPeopleTab = picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )
+    t.equal(
+        updatedPeopleTab?.getAttribute('aria-selected'),
+        'true',
+        'People tab is now selected'
+    )
+    t.ok(picker.isOpen, 'picker stays open')
+    picker.close()
     picker.remove()
+})
+
+test('Enter on a skin tone radio checks it without emoji-select', t => {
+    const picker = document.createElement('emoji-picker') as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+
+    let selected = false
+    picker.addEventListener('emoji-select', () => { selected = true })
+
+    const radios = picker.querySelectorAll<HTMLElement>('[role="radio"]')
+    t.ok(radios.length >= 2, 'has skin tone radios')
+    const second = radios[1]
+    second?.focus()
+    if (second) {
+        keydown(second, 'Enter')
+        second.click()
+    }
+
+    t.ok(!selected, 'Enter on radio does not emit emoji-select')
+    const updatedRadios = picker.querySelectorAll<HTMLElement>(
+        '[role="radio"]'
+    )
+    t.equal(
+        updatedRadios[1]?.getAttribute('aria-checked'),
+        'true',
+        'radio is now checked'
+    )
+    t.ok(picker.isOpen, 'picker stays open')
+    picker.close()
+    picker.remove()
+})
+
+test('ArrowLeft in search box stays in search box', t => {
+    const picker = document.createElement('emoji-picker') as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+
+    const search = picker.querySelector<HTMLElement>(
+        'input[type="search"]'
+    )
+    t.equal(
+        document.activeElement,
+        search,
+        'search is focused after open'
+    )
+    if (search) keydown(search, 'ArrowLeft')
+    t.equal(
+        document.activeElement,
+        search,
+        'focus stays in search after ArrowLeft'
+    )
+    if (search) keydown(search, 'ArrowRight')
+    t.equal(
+        document.activeElement,
+        search,
+        'focus stays in search after ArrowRight'
+    )
+    if (search) keydown(search, 'ArrowUp')
+    t.equal(
+        document.activeElement,
+        search,
+        'focus stays in search after ArrowUp'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('ArrowDown in search box moves focus into grid', t => {
+    const picker = document.createElement('emoji-picker') as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    const search = picker.querySelector<HTMLElement>(
+        'input[type="search"]'
+    )
+    search?.focus()
+    if (search) keydown(search, 'ArrowDown')
+
+    const firstBtn = picker.querySelector<HTMLElement>(
+        '[role="gridcell"] button'
+    )
+    t.equal(
+        document.activeElement,
+        firstBtn,
+        'focus moves to the first gridcell button'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('Enter in search with query selects first visible emoji', t => {
+    const picker = document.createElement('emoji-picker') as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+
+    const input = picker.querySelector<HTMLInputElement>(
+        'input[type="search"]'
+    )
+    if (input) {
+        input.value = 'butter'
+        input.dispatchEvent(new InputEvent('input', { bubbles:true }))
+    }
+
+    const details:Array<EmojiSelectDetail> = []
+    picker.addEventListener('emoji-select', (event) => {
+        details.push(
+            (event as CustomEvent<EmojiSelectDetail>).detail
+        )
+    })
+
+    if (input) keydown(input, 'Enter')
+
+    t.equal(details.length, 1, 'emits emoji-select')
+    t.ok(
+        details[0]?.emoji.name.startsWith('butter'),
+        'selects the first visible emoji matching the query'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('ArrowRight on tone radio moves and checks next radio', t => {
+    const picker = document.createElement('emoji-picker') as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+
+    const radios = picker.querySelectorAll<HTMLElement>('[role="radio"]')
+    t.ok(radios.length >= 3, 'has at least 3 radios')
+    radios[0]?.focus()
+    t.equal(
+        document.activeElement,
+        radios[0],
+        'first radio is focused'
+    )
+
+    if (radios[0]) keydown(radios[0], 'ArrowRight')
+
+    const updated = picker.querySelectorAll<HTMLElement>(
+        '[role="radio"]'
+    )
+    t.equal(
+        document.activeElement,
+        updated[1],
+        'focus moved to second radio'
+    )
+    t.equal(
+        updated[1]?.getAttribute('aria-checked'),
+        'true',
+        'second radio is now checked'
+    )
+    t.equal(
+        updated[0]?.getAttribute('aria-checked'),
+        'false',
+        'first radio is unchecked'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('after outside click, focus stays on clicked element', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    const other = document.createElement('button')
+    other.textContent = 'other'
+    document.body.append(picker, other)
+    picker.open()
+    t.ok(picker.isOpen, 'picker is open')
+
+    other.focus()
+    picker.querySelector<HTMLElement>(
+        '.emoji-picker-panel'
+    )?.dispatchEvent(new ToggleEvent('toggle', {
+        newState:'closed',
+        oldState:'open',
+    }))
+
+    t.ok(
+        !picker.isOpen,
+        'picker reports closed after light dismiss'
+    )
+    t.equal(
+        document.activeElement,
+        other,
+        'focus stays on the clicked element'
+    )
+    picker.remove()
+    other.remove()
 })
 
 test('emoji-picker inline mode stays in document flow', t => {
@@ -641,6 +1254,225 @@ test('emoji-picker inline mode stays in document flow', t => {
         'inline mode uses in-flow positioning'
     )
     picker.remove()
+})
+
+test('inline picker reports isOpen true on connect', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.setAttribute('inline', '')
+    document.body.appendChild(picker)
+
+    t.ok(
+        picker.isOpen,
+        'isOpen is true without calling open()'
+    )
+    picker.remove()
+})
+
+test('inline picker stays visible after selection', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.setAttribute('inline', '')
+    picker.emojis = [{
+        emoji:'🧈',
+        name:'butter',
+        keywords:['food'],
+        category:'people',
+    }]
+    document.body.appendChild(picker)
+
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    let detail:EmojiSelectDetail|null = null
+    picker.addEventListener('emoji-select', (ev) => {
+        detail = (ev as CustomEvent<EmojiSelectDetail>).detail
+    })
+
+    picker.querySelector<HTMLButtonElement>(
+        '[role="gridcell"] button'
+    )?.click()
+
+    t.ok(detail, 'emoji-select was emitted')
+    t.ok(
+        picker.isOpen,
+        'isOpen is still true after selection'
+    )
+    const panel = picker.querySelector<HTMLElement>(
+        '.emoji-picker-panel'
+    )
+    t.ok(
+        panel && !panel.hidden,
+        'panel is still visible after selection'
+    )
+    picker.remove()
+})
+
+test('arrow keys work in inline picker without open()', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.setAttribute('inline', '')
+    document.body.appendChild(picker)
+
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    const buttons = picker.querySelectorAll<HTMLButtonElement>(
+        '[role="gridcell"] button'
+    )
+    t.ok(buttons.length >= 2, 'grid has cells')
+    buttons[0]?.focus()
+    keydown(buttons[0]!, 'ArrowRight')
+
+    t.equal(
+        document.activeElement,
+        buttons[1],
+        'ArrowRight moves focus in inline picker'
+    )
+    picker.remove()
+})
+
+test('Escape in inline picker clears query and stays visible', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.setAttribute('inline', '')
+    document.body.appendChild(picker)
+
+    const input = picker.querySelector<HTMLInputElement>(
+        'input[type="search"]'
+    )
+    if (input) {
+        input.value = 'butter'
+        input.dispatchEvent(
+            new InputEvent('input', { bubbles:true })
+        )
+    }
+
+    t.equal(input?.value, 'butter', 'query is set')
+    keydown(picker, 'Escape')
+
+    t.equal(
+        input?.value,
+        '',
+        'Escape clears the search query'
+    )
+    t.ok(
+        picker.isOpen,
+        'inline picker stays open after Escape'
+    )
+    const panel = picker.querySelector<HTMLElement>(
+        '.emoji-picker-panel'
+    )
+    t.ok(
+        panel && !panel.hidden,
+        'panel is still visible after Escape'
+    )
+    t.equal(
+        document.activeElement,
+        input,
+        'focus moves to search input after Escape'
+    )
+    picker.remove()
+})
+
+test('close() on inline picker leaves panel visible', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.setAttribute('inline', '')
+    document.body.appendChild(picker)
+
+    t.ok(picker.isOpen, 'starts open')
+    picker.close()
+    t.ok(
+        picker.isOpen,
+        'isOpen still true after close()'
+    )
+    const panel = picker.querySelector<HTMLElement>(
+        '.emoji-picker-panel'
+    )
+    t.ok(
+        panel && !panel.hidden,
+        'panel still visible after close()'
+    )
+    picker.remove()
+})
+
+test('toggling inline attribute switches display mode', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+
+    t.ok(!picker.isOpen, 'starts closed as popover')
+
+    picker.setAttribute('inline', '')
+    t.ok(
+        picker.isOpen,
+        'isOpen true after adding inline'
+    )
+    const panel = picker.querySelector<HTMLElement>(
+        '.emoji-picker-panel'
+    )
+    t.ok(
+        panel && !panel.hidden,
+        'panel visible after adding inline'
+    )
+    t.ok(
+        !panel?.hasAttribute('popover'),
+        'popover attribute removed'
+    )
+
+    picker.removeAttribute('inline')
+    t.ok(
+        !picker.isOpen,
+        'isOpen false after removing inline'
+    )
+    t.ok(
+        panel?.hidden,
+        'panel hidden after removing inline'
+    )
+    t.equal(
+        panel?.getAttribute('popover'),
+        'auto',
+        'popover attribute restored'
+    )
+    picker.remove()
+})
+
+test('open() on inline picker only focuses search', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.setAttribute('inline', '')
+    document.body.appendChild(picker)
+
+    const other = document.createElement('button')
+    other.textContent = 'other'
+    document.body.append(other)
+    other.focus()
+
+    picker.open()
+    const search = picker.querySelector<HTMLElement>(
+        'input[type="search"]'
+    )
+    t.equal(
+        document.activeElement,
+        search,
+        'open() focuses search input in inline mode'
+    )
+    t.ok(
+        picker.isOpen,
+        'isOpen remains true'
+    )
+    picker.remove()
+    other.remove()
 })
 
 test('emoji-picker stores and restores capped recently used emoji', t => {
@@ -666,7 +1498,9 @@ test('emoji-picker stores and restores capped recently used emoji', t => {
             '[role="tab"][aria-label="People"]'
         )?.click()
         const button = Array.from(
-            picker.querySelectorAll<HTMLButtonElement>('[role="gridcell"]')
+            picker.querySelectorAll<HTMLButtonElement>(
+                '[role="gridcell"] button'
+            )
         ).find(item => item.textContent === emoji.emoji)
         button?.click()
     }
@@ -689,7 +1523,9 @@ test('emoji-picker stores and restores capped recently used emoji', t => {
         '[role="tab"][aria-label="Recently used"]'
     )?.click()
     Array.from(
-        picker.querySelectorAll<HTMLButtonElement>('[role="gridcell"]')
+        picker.querySelectorAll<HTMLButtonElement>(
+            '[role="gridcell"] button'
+        )
     ).find(item => item.textContent === duplicate?.emoji)?.click()
 
     picker.open()
@@ -739,7 +1575,7 @@ test('emoji-picker applies and restores a selected skin tone', t => {
     t.equal(swatches.length, 6, 'renders six skin tone swatches')
     swatches[5]?.dispatchEvent(new MouseEvent('click', { bubbles:true }))
     const waveButton = picker.querySelector<HTMLButtonElement>(
-        '[role="gridcell"]'
+        '[role="gridcell"] button'
     )
     t.equal(waveButton?.textContent, '👋🏿', 'uses the selected skin tone')
 
@@ -760,12 +1596,247 @@ test('emoji-picker applies and restores a selected skin tone', t => {
         '[role="tab"][aria-label="People"]'
     )?.click()
     t.equal(
-        restored.querySelector('[role="gridcell"]')?.textContent,
+        restored.querySelector(
+            '[role="gridcell"] button'
+        )?.textContent,
         '👋🏿',
         'restores the skin tone from localStorage'
     )
     restored.remove()
     localStorage.removeItem(key)
+})
+
+test('every gridcell sits inside a row and contains a button', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    const rows = picker.querySelectorAll('[role="row"]')
+    t.ok(rows.length > 0, 'grid has rows')
+
+    const cells = picker.querySelectorAll('[role="gridcell"]')
+    t.ok(cells.length > 0, 'grid has gridcells')
+
+    for (const cell of Array.from(cells)) {
+        t.equal(
+            cell.closest('[role="row"]')?.getAttribute('role'),
+            'row',
+            'gridcell is inside a row'
+        )
+        const buttons = cell.querySelectorAll('button')
+        t.equal(
+            buttons.length,
+            1,
+            'gridcell contains exactly one button'
+        )
+    }
+    picker.close()
+    picker.remove()
+})
+
+test('exactly one gridcell button has tabindex 0', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    const tabbable = () => picker.querySelectorAll(
+        '[role="gridcell"] button[tabindex="0"]'
+    )
+    t.equal(
+        tabbable().length, 1,
+        'one tabbable button after render'
+    )
+
+    const buttons = picker.querySelectorAll<HTMLButtonElement>(
+        '[role="gridcell"] button'
+    )
+    buttons[0]?.focus()
+    keydown(buttons[0]!, 'ArrowRight')
+    t.equal(
+        tabbable().length, 1,
+        'one tabbable button after arrow navigation'
+    )
+    t.equal(
+        tabbable()[0],
+        buttons[1],
+        'tabbable button is the focused one'
+    )
+
+    buttons[3]?.click()
+    picker.open()
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+    t.equal(
+        tabbable().length, 1,
+        'one tabbable button after click and re-render'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('grid renders eight columns per row', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    const rows = picker.querySelectorAll('[role="row"]')
+    t.ok(rows.length > 1, 'has multiple rows')
+    const firstRowCells = rows[0]!
+        .querySelectorAll('[role="gridcell"]')
+    t.equal(
+        firstRowCells.length, 8,
+        'first row has eight cells'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('Enter on a focused grid cell emits emoji-select', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    let detail:EmojiSelectDetail|null = null
+    picker.addEventListener('emoji-select', (ev) => {
+        detail = (ev as CustomEvent<EmojiSelectDetail>).detail
+    })
+
+    const btn = picker.querySelector<HTMLButtonElement>(
+        '[role="gridcell"] button'
+    )
+    btn?.focus()
+    keydown(btn!, 'Enter')
+    t.ok(detail, 'Enter emits emoji-select')
+    t.ok(
+        detail!.emoji.emoji.length > 0,
+        'detail contains the emoji'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('Home and End move to row start and end', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    const buttons = picker.querySelectorAll<HTMLButtonElement>(
+        '[role="gridcell"] button'
+    )
+    const firstRow = picker.querySelector('[role="row"]')
+    const rowLen = firstRow ?
+        firstRow.querySelectorAll('[role="gridcell"]').length :
+        8
+
+    buttons[3]?.focus()
+    keydown(buttons[3]!, 'Home')
+    t.equal(
+        document.activeElement,
+        buttons[0],
+        'Home moves to the first cell in the row'
+    )
+
+    keydown(buttons[0]!, 'End')
+    t.equal(
+        document.activeElement,
+        buttons[rowLen - 1],
+        'End moves to the last cell in the row'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('ArrowDown moves to the cell below using row length', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    const buttons = picker.querySelectorAll<HTMLButtonElement>(
+        '[role="gridcell"] button'
+    )
+    const firstRow = picker.querySelector('[role="row"]')
+    const rowLen = firstRow ?
+        firstRow.querySelectorAll('[role="gridcell"]').length :
+        8
+
+    buttons[2]?.focus()
+    keydown(buttons[2]!, 'ArrowDown')
+    t.equal(
+        document.activeElement,
+        buttons[2 + rowLen],
+        'ArrowDown moves by the rendered row length'
+    )
+
+    keydown(buttons[2 + rowLen]!, 'ArrowUp')
+    t.equal(
+        document.activeElement,
+        buttons[2],
+        'ArrowUp moves back by the rendered row length'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('Tab from search lands on tabbable cell', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+
+    const search = picker.querySelector<HTMLElement>(
+        'input[type="search"]'
+    )
+    search?.focus()
+
+    const tabbable = picker.querySelector<HTMLButtonElement>(
+        '[role="gridcell"] button[tabindex="0"]'
+    )
+    t.ok(tabbable, 'a tabbable cell exists')
+
+    const nonTabbable = picker.querySelectorAll(
+        '[role="gridcell"] button[tabindex="-1"]'
+    )
+    t.ok(
+        nonTabbable.length > 0,
+        'other cells are not tabbable'
+    )
+    picker.close()
+    picker.remove()
 })
 
 test('emoji-picker updates its preview when an emoji is hovered', t => {
@@ -779,11 +1850,15 @@ test('emoji-picker updates its preview when an emoji is hovered', t => {
     document.body.appendChild(picker)
 
     const button = picker.querySelector<HTMLButtonElement>(
-        '[role="gridcell"]'
+        '[role="gridcell"] button'
     )
-    const preview = picker.querySelector('[role="status"]')
+    const preview = picker.querySelector(
+        '.emoji-picker-preview'
+    )
     t.ok(preview, 'renders a preview region')
-    button?.dispatchEvent(new MouseEvent('mouseenter', { bubbles:true }))
+    button?.dispatchEvent(new MouseEvent('mouseenter', {
+        bubbles:true,
+    }))
     t.ok(
         preview?.textContent?.includes('🧈'),
         'preview shows the hovered emoji'
@@ -792,6 +1867,196 @@ test('emoji-picker updates its preview when an emoji is hovered', t => {
         preview?.textContent?.includes('butter'),
         'preview shows the hovered emoji name'
     )
+    picker.remove()
+})
+
+test('preview element has aria-hidden', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+
+    const preview = picker.querySelector(
+        '.emoji-picker-preview'
+    )
+    t.equal(
+        preview?.getAttribute('aria-hidden'),
+        'true',
+        'preview is hidden from assistive technology'
+    )
+    picker.remove()
+})
+
+test('status region updates after search query changes', async t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+
+    const input = picker.querySelector<HTMLInputElement>(
+        'input[type="search"]'
+    )
+    if (input) {
+        input.value = 'butter'
+        input.dispatchEvent(
+            new InputEvent('input', { bubbles:true })
+        )
+    }
+
+    const status = picker.querySelector('[role="status"]')
+    t.ok(status, 'has a status region')
+
+    await waitFor(() => {
+        return (status?.textContent?.trim().length ?? 0) > 0
+    })
+
+    t.ok(
+        (status?.textContent?.trim().length ?? 0) > 0,
+        'status region has content after query change'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('status region does not update on hover or focus', async t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    picker.emojis = [{
+        emoji:'🧈',
+        name:'butter',
+        keywords:['food'],
+        category:'people',
+    }]
+    document.body.appendChild(picker)
+
+    const status = picker.querySelector('[role="status"]')
+    const before = status?.textContent ?? ''
+
+    const button = picker.querySelector<HTMLButtonElement>(
+        '[role="gridcell"] button'
+    )
+    button?.dispatchEvent(new MouseEvent('mouseenter', {
+        bubbles:true,
+    }))
+    await sleep(200)
+
+    t.equal(
+        status?.textContent ?? '',
+        before,
+        'status unchanged after hover'
+    )
+
+    button?.focus()
+    await sleep(200)
+
+    t.equal(
+        status?.textContent ?? '',
+        before,
+        'status unchanged after focus'
+    )
+    picker.remove()
+})
+
+test('status region does not update on category change', async t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+
+    const status = picker.querySelector('[role="status"]')
+    await sleep(200)
+    const before = status?.textContent ?? ''
+
+    picker.querySelector<HTMLElement>(
+        '[role="tab"][aria-label="People"]'
+    )?.click()
+    await sleep(200)
+
+    t.equal(
+        status?.textContent ?? '',
+        before,
+        'status unchanged after category switch'
+    )
+    picker.close()
+    picker.remove()
+})
+
+test('rapid typing yields single debounced status update', async t => {
+    t.plan(1)
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+
+    const input = picker.querySelector<HTMLInputElement>(
+        'input[type="search"]'
+    )
+    const status = picker.querySelector('[role="status"]')
+
+    for (const char of ['b', 'bu', 'but']) {
+        if (input) {
+            input.value = char
+            input.dispatchEvent(
+                new InputEvent('input', { bubbles:true })
+            )
+        }
+    }
+
+    t.equal(
+        status?.textContent?.trim() ?? '',
+        '',
+        'status is empty during rapid typing'
+    )
+
+    picker.close()
+    picker.remove()
+})
+
+test('query with leading spaces returns same results', t => {
+    const picker = document.createElement(
+        'emoji-picker'
+    ) as EmojiPicker
+    document.body.appendChild(picker)
+    picker.open()
+
+    const input = picker.querySelector<HTMLInputElement>(
+        'input[type="search"]'
+    )
+
+    if (input) {
+        input.value = 'butter'
+        input.dispatchEvent(
+            new InputEvent('input', { bubbles:true })
+        )
+    }
+    const trimmedCells = picker.querySelectorAll(
+        '[role="gridcell"]'
+    ).length
+
+    if (input) {
+        input.value = '  butter'
+        input.dispatchEvent(
+            new InputEvent('input', { bubbles:true })
+        )
+    }
+    const spacedCells = picker.querySelectorAll(
+        '[role="gridcell"]'
+    ).length
+
+    t.equal(
+        spacedCells,
+        trimmedCells,
+        'leading spaces produce same results as trimmed'
+    )
+    t.ok(
+        trimmedCells > 0,
+        'at least one result for butter'
+    )
+    picker.close()
     picker.remove()
 })
 
@@ -812,7 +2077,9 @@ test('emoji-picker inserts into the field named by for', t => {
     }]
     document.body.appendChild(picker)
     picker.open()
-    picker.querySelector<HTMLButtonElement>('[role="gridcell"]')?.click()
+    picker.querySelector<HTMLButtonElement>(
+        '[role="gridcell"] button'
+    )?.click()
 
     t.equal(
         field.value,
@@ -1311,6 +2578,108 @@ test('aria-controls set and cleared', t => {
     el.remove()
 })
 
+test('Enter with isComposing true does not commit', t => {
+    const { el, textarea } = setup(SMALL_SET)
+    simulateInput(textarea, ':pizza')
+    t.ok(el.isOpen, 'popover is open')
+    keydown(textarea, 'Enter', { isComposing:true })
+    t.ok(el.isOpen, 'popover stays open during IME')
+    t.ok(
+        textarea.value.includes(':pizza'),
+        'trigger text not replaced during IME'
+    )
+    t.ok(
+        !textarea.value.includes('🍕'),
+        'no emoji inserted during IME'
+    )
+    el.remove()
+})
+
+test('keyCode 229 does not commit', t => {
+    const { el, textarea } = setup(SMALL_SET)
+    simulateInput(textarea, ':pizza')
+    t.ok(el.isOpen, 'popover is open')
+    keydown(textarea, 'Enter', { keyCode:229 })
+    t.ok(el.isOpen, 'popover stays open for keyCode 229')
+    el.remove()
+})
+
+test('detach removes all aria attributes from field', t => {
+    const { el, textarea } = setup(SMALL_SET)
+    simulateInput(textarea, ':pizza')
+    t.ok(el.isOpen, 'popover opened')
+    el.detach()
+    t.ok(
+        !textarea.hasAttribute('aria-autocomplete'),
+        'aria-autocomplete removed'
+    )
+    t.ok(
+        !textarea.hasAttribute('aria-controls'),
+        'aria-controls removed'
+    )
+    t.ok(
+        !textarea.hasAttribute('aria-activedescendant'),
+        'aria-activedescendant removed'
+    )
+    el.remove()
+})
+
+test('minChars assigned before upgrade is honored', t => {
+    const tag = `emoji-input-pre-${Math.random().toString(36).slice(2, 8)}`
+    const el = document.createElement(tag) as EmojiInput
+    const textarea = document.createElement('textarea')
+    el.appendChild(textarea)
+    ;(el as any).minChars = 1
+    document.body.appendChild(el)
+    customElements.define(tag, class extends EmojiInput {
+        static TAG = tag
+    })
+    customElements.upgrade(el)
+    t.equal(el.minChars, 1, 'minChars survived upgrade')
+    simulateInput(textarea, ':s')
+    t.ok(el.isOpen, 'opens with 1 char after pre-upgrade minChars=1')
+    el.remove()
+})
+
+test('emojis assigned before upgrade is used for search', t => {
+    const tag = `emoji-input-pre2-${Math.random().toString(36).slice(2, 8)}`
+    const el = document.createElement(tag) as EmojiInput
+    const textarea = document.createElement('textarea')
+    el.appendChild(textarea)
+    const custom:EmojiEntry[] = [
+        { emoji:'🧪', name:'test_tube', keywords:['science'] },
+    ]
+    ;(el as any).emojis = custom
+    document.body.appendChild(el)
+    customElements.define(tag, class extends EmojiInput {
+        static TAG = tag
+    })
+    customElements.upgrade(el)
+    t.equal(el.emojis, custom, 'emojis survived upgrade')
+    simulateInput(textarea, ':test')
+    const items = listItems(el)
+    t.ok(items.length >= 1, 'finds pre-upgrade custom emoji')
+    el.remove()
+})
+
+test('adopts existing rendered list child', t => {
+    const el = document.createElement('emoji-input') as EmojiInput
+    const textarea = document.createElement('textarea')
+    const uid = 'ssr-test'
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = EmojiInput.render(uid)
+    const list = wrapper.firstElementChild as HTMLElement
+    el.appendChild(textarea)
+    el.appendChild(list)
+    document.body.appendChild(el)
+    const lists = el.querySelectorAll('[role="listbox"]')
+    t.equal(lists.length, 1, 'exactly one listbox exists')
+    el.emojis = SMALL_SET
+    simulateInput(textarea, ':pizza')
+    t.ok(el.isOpen, 'popover works with adopted list')
+    el.remove()
+})
+
 test('disconnectedCallback cleans up', t => {
     const { el, textarea } = setup(SMALL_SET)
     simulateInput(textarea, ':pizza')
@@ -1344,12 +2713,30 @@ function simulateInput (
     )
 }
 
-function keydown (field:HTMLElement, key:string):void {
+function keydown (
+    field:HTMLElement,
+    key:string,
+    opts?:KeyboardEventInit,
+):void {
     field.dispatchEvent(new KeyboardEvent('keydown', {
         key,
         bubbles:true,
         cancelable:true,
+        ...opts,
     }))
+}
+
+async function waitFor (
+    condition:() => boolean,
+    timeout = 500,
+):Promise<void> {
+    const start = Date.now()
+    while (!condition()) {
+        if (Date.now() - start > timeout) {
+            throw new Error('waitFor timed out')
+        }
+        await sleep(20)
+    }
 }
 
 function listItems (

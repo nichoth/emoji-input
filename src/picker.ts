@@ -1,5 +1,6 @@
 import { DEFAULT_EMOJIS, type EmojiEntry } from './data.js'
 import { search } from './search.js'
+import { placePopover } from './placement.js'
 
 export { EmojiButton } from './button.js'
 
@@ -42,7 +43,11 @@ const TONE_LABELS = [
     'Dark skin tone',
 ]
 
-export class EmojiPicker extends HTMLElement {
+const Base = typeof HTMLElement !== 'undefined' ?
+    HTMLElement :
+    class {} as unknown as typeof HTMLElement
+
+export class EmojiPicker extends Base {
     static TAG = 'emoji-picker'
     static observedAttributes = [
         'inline',
@@ -51,7 +56,7 @@ export class EmojiPicker extends HTMLElement {
     ]
 
     static define (tag = EmojiPicker.TAG):void {
-        if (!window || !window.customElements) return
+        if (typeof window === 'undefined' || !window.customElements) return
         const customElements = window.customElements
         if (!customElements.get(tag)) customElements.define(tag, EmojiPicker)
     }
@@ -63,6 +68,8 @@ export class EmojiPicker extends HTMLElement {
     private grid!:HTMLDivElement
     private tones!:HTMLDivElement
     private preview!:HTMLDivElement
+    private status!:HTMLDivElement
+    private statusTimer:ReturnType<typeof setTimeout>|null = null
     private category = 'recent'
     private query = ''
     private opened = false
@@ -73,6 +80,7 @@ export class EmojiPicker extends HTMLElement {
     }`
 
     private triggerElement:HTMLElement|null = null
+    private anchorElement:HTMLElement|null = null
 
     get recentKey ():string {
         return this.getAttribute('recent-key')
@@ -95,7 +103,7 @@ export class EmojiPicker extends HTMLElement {
     static render (el:EmojiPicker):void {
         el.panel = document.createElement('div')
         el.panel.className = 'emoji-picker-panel'
-        el.panel.setAttribute('popover', 'manual')
+        el.panel.setAttribute('popover', 'auto')
 
         el.tabs = document.createElement('div')
         el.tabs.className = 'emoji-picker-tabs'
@@ -114,8 +122,9 @@ export class EmojiPicker extends HTMLElement {
             `${el.uid}-grid`,
         )
         el.searchInput.addEventListener('input', () => {
-            el.query = el.searchInput.value
+            el.query = el.searchInput.value.trim()
             el.renderGrid()
+            el.scheduleStatusUpdate()
         })
 
         el.tones = document.createElement('div')
@@ -131,8 +140,12 @@ export class EmojiPicker extends HTMLElement {
 
         el.preview = document.createElement('div')
         el.preview.className = 'emoji-picker-preview'
-        el.preview.setAttribute('role', 'status')
-        el.preview.setAttribute('aria-live', 'polite')
+        el.preview.setAttribute('aria-hidden', 'true')
+
+        el.status = document.createElement('div')
+        el.status.className = 'emoji-picker-status'
+        el.status.setAttribute('role', 'status')
+        el.status.setAttribute('aria-live', 'polite')
 
         el.panel.append(
             el.tabs,
@@ -140,9 +153,25 @@ export class EmojiPicker extends HTMLElement {
             el.tones,
             el.grid,
             el.preview,
+            el.status,
         )
         el.addEventListener('keydown', el.onKeydown)
         el.tabs.addEventListener('keydown', el.onTabKeydown)
+        el.tones.addEventListener('keydown', el.onToneKeydown)
+        el.grid.addEventListener('mouseenter', (ev) => {
+            el.onGridHoverOrFocus(ev)
+        }, true)
+        el.grid.addEventListener('focusin', (ev) => {
+            el.onGridHoverOrFocus(ev)
+        })
+        el.grid.addEventListener('click', (ev) => {
+            const btn = (ev.target as HTMLElement)
+                .closest<HTMLButtonElement>(
+                    '[role="gridcell"] button'
+                )
+            if (btn) el.focusCell(btn)
+        })
+        el.panel.addEventListener('toggle', el.onPanelToggle)
     }
 
     get emojis ():Array<EmojiEntry> {
@@ -167,12 +196,17 @@ export class EmojiPicker extends HTMLElement {
         this.renderTabs()
         this.renderTones()
         this.renderGrid()
-        document.addEventListener('click', this.onDocumentClick)
     }
 
     disconnectedCallback ():void {
-        document.removeEventListener('click', this.onDocumentClick)
-        this.close()
+        this.detachPositionListeners()
+        if (this.panel.matches(':popover-open')) {
+            this.panel.hidePopover()
+        }
+        this.panel.hidden = true
+        this.opened = false
+        this.anchorElement = null
+        this.triggerElement = null
     }
 
     attributeChangedCallback (name:string):void {
@@ -184,30 +218,42 @@ export class EmojiPicker extends HTMLElement {
     }
 
     open (anchor?:HTMLElement):void {
+        if (this.hasAttribute('inline')) {
+            this.searchInput.focus({ preventScroll:true })
+            return
+        }
         const el = document.activeElement
         this.triggerElement =
             el instanceof HTMLElement ? el : null
+        this.anchorElement = anchor ?? null
         this.panel.hidden = false
-        if (!this.hasAttribute('inline')
-            && typeof this.panel.showPopover === 'function') {
+        if (typeof this.panel.showPopover === 'function') {
             this.panel.showPopover()
         }
         if (anchor && !this.hasAttribute('inline')) {
-            const rect = anchor.getBoundingClientRect()
-            this.panel.style.top = `${rect.bottom}px`
-            this.panel.style.left = `${rect.left}px`
+            this.reposition()
         }
         this.opened = true
+        if (!this.hasAttribute('inline')) {
+            this.attachPositionListeners()
+        }
         this.searchInput.focus({ preventScroll:true })
     }
 
     close ():void {
+        if (this.hasAttribute('inline')) return
+        this.detachPositionListeners()
+        const restoreFocus = this.triggerElement
+            && this.panel.contains(document.activeElement)
         if (this.panel.matches(':popover-open')) {
             this.panel.hidePopover()
         }
         this.panel.hidden = true
         this.opened = false
-        this.triggerElement?.focus()
+        this.anchorElement = null
+        if (restoreFocus) {
+            this.triggerElement!.focus()
+        }
         this.triggerElement = null
     }
 
@@ -242,8 +288,12 @@ export class EmojiPicker extends HTMLElement {
         if (!this.panel) return
         if (this.hasAttribute('inline')) {
             this.panel.removeAttribute('popover')
+            this.panel.hidden = false
+            this.opened = true
         } else {
-            this.panel.setAttribute('popover', 'manual')
+            this.panel.setAttribute('popover', 'auto')
+            this.panel.hidden = true
+            this.opened = false
         }
     }
 
@@ -270,24 +320,50 @@ export class EmojiPicker extends HTMLElement {
             return
         }
 
-        for (const emoji of emojis) {
+        const cols = 8
+        let row:HTMLDivElement|null = null
+        for (let i = 0; i < emojis.length; i++) {
+            if (i % cols === 0) {
+                row = document.createElement('div')
+                row.setAttribute('role', 'row')
+                row.className = 'emoji-picker-row'
+                this.grid.append(row)
+            }
+            const emoji = emojis[i]!
             const displayed = this.withSelectedTone(emoji)
+            const cell = document.createElement('div')
+            cell.setAttribute('role', 'gridcell')
             const button = document.createElement('button')
             button.type = 'button'
             button.className = 'emoji-picker-emoji'
-            button.setAttribute('role', 'gridcell')
             button.setAttribute(
                 'aria-label', displayed.label ?? displayed.name
             )
             button.textContent = displayed.emoji
-            button.addEventListener('mouseenter', () => {
-                this.showPreview(displayed)
-            })
-            button.addEventListener('focus', () => {
-                this.showPreview(displayed)
-            })
-            button.addEventListener('click', () => this.select(displayed))
-            this.grid.append(button)
+            button.tabIndex = i === 0 ? 0 : -1
+            button.dataset.emojiName = emoji.name
+            button.addEventListener(
+                'click', () => this.select(displayed)
+            )
+            cell.append(button)
+            row!.append(cell)
+        }
+    }
+
+    private onGridHoverOrFocus (ev:Event):void {
+        const btn = (ev.target as HTMLElement)
+            .closest<HTMLButtonElement>(
+                '[role="gridcell"] button'
+            )
+        if (!btn) return
+        const name = btn.dataset.emojiName
+        const entry = this.data.find(
+            e => e.name === name
+        )
+        if (entry) {
+            this.showPreview(
+                this.withSelectedTone(entry)
+            )
         }
     }
 
@@ -295,17 +371,34 @@ export class EmojiPicker extends HTMLElement {
         const query = this.query
         this.addRecent(emoji)
         const field = this.targetField
+        const trigger = this.triggerElement
         if (field) {
-            const start = field.selectionStart ?? field.value.length
+            const start = field.selectionStart
+                ?? field.value.length
             const end = field.selectionEnd ?? start
-            field.setRangeText(emoji.emoji, start, end, 'end')
+            field.setRangeText(
+                emoji.emoji, start, end, 'end'
+            )
             field.dispatchEvent(new InputEvent('input', {
                 bubbles:true,
                 inputType:'insertText',
                 data:emoji.emoji,
             }))
         }
-        this.close()
+        const isInline = this.hasAttribute('inline')
+        if (!isInline) {
+            if (this.panel.matches(':popover-open')) {
+                this.panel.hidePopover()
+            }
+            this.panel.hidden = true
+            this.opened = false
+            this.triggerElement = null
+        }
+        if (field) {
+            field.focus()
+        } else if (!isInline && trigger) {
+            trigger.focus()
+        }
         this.dispatchEvent(new CustomEvent('emoji-select', {
             bubbles:true,
             composed:true,
@@ -426,6 +519,23 @@ export class EmojiPicker extends HTMLElement {
         }
     }
 
+    private scheduleStatusUpdate ():void {
+        if (this.statusTimer !== null) {
+            clearTimeout(this.statusTimer)
+        }
+        if (!this.query) {
+            this.status.textContent = ''
+            return
+        }
+        this.statusTimer = setTimeout(() => {
+            const count = this.grid.querySelectorAll(
+                '[role="gridcell"]'
+            ).length
+            this.status.textContent = `${count} results`
+            this.statusTimer = null
+        }, 150)
+    }
+
     private clearPreview ():void {
         this.preview.replaceChildren()
     }
@@ -446,13 +556,62 @@ export class EmojiPicker extends HTMLElement {
         if (!this.opened) return
         if (event.key === 'Escape') {
             event.preventDefault()
-            this.close()
+            if (this.hasAttribute('inline')) {
+                this.query = ''
+                this.searchInput.value = ''
+                this.renderGrid()
+                this.searchInput.focus()
+            } else {
+                this.close()
+            }
             return
         }
 
+        const target = event.target as HTMLElement|null
+
+        if (target?.closest('[role="tab"]')) {
+            return
+        }
+
+        if (target?.closest('[role="radio"]')) {
+            return
+        }
+
+        if (target === this.searchInput) {
+            this.onSearchKeydown(event)
+            return
+        }
+
+        if (target?.closest('[role="gridcell"]')
+            || target?.closest('[role="grid"]')) {
+            this.onGridKeydown(event)
+        }
+    }
+
+    private onSearchKeydown (event:KeyboardEvent):void {
+        if (event.key === 'ArrowDown') {
+            event.preventDefault()
+            const btn = this.grid.querySelector<HTMLButtonElement>(
+                '[role="gridcell"] button'
+            )
+            if (btn) this.focusCell(btn)
+            return
+        }
+
+        if (event.key === 'Enter') {
+            const query = this.searchInput.value.trim()
+            if (!query) return
+            const btn = this.grid.querySelector<HTMLButtonElement>(
+                '[role="gridcell"] button'
+            )
+            btn?.click()
+        }
+    }
+
+    private onGridKeydown (event:KeyboardEvent):void {
         const buttons = Array.from(
             this.grid.querySelectorAll<HTMLButtonElement>(
-                '[role="gridcell"]'
+                '[role="gridcell"] button'
             )
         )
         if (!buttons.length) return
@@ -461,25 +620,56 @@ export class EmojiPicker extends HTMLElement {
         const current = Math.max(0, buttons.indexOf(
             active as HTMLButtonElement
         ))
-        const delta = event.key === 'ArrowRight'
-            ? 1
-            : event.key === 'ArrowLeft'
-                ? -1
-                : event.key === 'ArrowDown'
-                    ? 8
-                    : event.key === 'ArrowUp'
-                        ? -8
-                        : 0
 
-        if (delta) {
-            event.preventDefault()
-            const index = (current + delta + buttons.length)
-                % buttons.length
-            buttons[index]?.focus()
-        } else if (event.key === 'Enter') {
-            event.preventDefault()
-            buttons[current]?.click()
+        const currentBtn = buttons[current]!
+        const row = currentBtn.closest('[role="row"]')
+        const rowCells = row ?
+            Array.from(row.querySelectorAll<HTMLButtonElement>(
+                '[role="gridcell"] button'
+            )) :
+            buttons
+        const colIndex = rowCells.indexOf(currentBtn)
+        const cols = rowCells.length
+
+        let next = -1
+        if (event.key === 'ArrowRight') {
+            next = current + 1 < buttons.length ?
+                current + 1 : current
+        } else if (event.key === 'ArrowLeft') {
+            next = current - 1 >= 0 ?
+                current - 1 : current
+        } else if (event.key === 'ArrowDown') {
+            const target = current + cols
+            next = target < buttons.length ?
+                target : current
+        } else if (event.key === 'ArrowUp') {
+            const target = current - cols
+            next = target >= 0 ?
+                target : current
+        } else if (event.key === 'Home') {
+            next = current - colIndex
+        } else if (event.key === 'End') {
+            next = current - colIndex + rowCells.length - 1
+        } else if (
+            event.key === 'Enter' || event.key === ' '
+        ) {
+            currentBtn.click()
+            return
         }
+
+        if (next >= 0 && next !== current) {
+            event.preventDefault()
+            this.focusCell(buttons[next]!)
+        }
+    }
+
+    private focusCell (button:HTMLButtonElement):void {
+        const prev = this.grid.querySelector<HTMLButtonElement>(
+            '[role="gridcell"] button[tabindex="0"]'
+        )
+        if (prev) prev.tabIndex = -1
+        button.tabIndex = 0
+        button.focus()
     }
 
     private onTabKeydown = (event:KeyboardEvent):void => {
@@ -517,10 +707,88 @@ export class EmojiPicker extends HTMLElement {
         )[next]?.focus()
     }
 
-    private onDocumentClick = (event:MouseEvent):void => {
-        if (!this.opened) return
-        if (!event.composedPath().includes(this)) {
-            this.close()
+    private onToneKeydown = (event:KeyboardEvent):void => {
+        const radios = Array.from(
+            this.tones.querySelectorAll<HTMLButtonElement>(
+                '[role="radio"]'
+            )
+        )
+        const current = radios.indexOf(
+            document.activeElement as HTMLButtonElement
+        )
+        if (current === -1) return
+
+        let next = -1
+        if (event.key === 'ArrowRight') {
+            next = (current + 1) % radios.length
+        } else if (event.key === 'ArrowLeft') {
+            next = (current - 1 + radios.length)
+                % radios.length
+        }
+
+        if (next < 0) return
+        event.preventDefault()
+        event.stopPropagation()
+        this.skinTone = next
+        this.writeSkinTone()
+        this.renderTones()
+        this.renderGrid()
+        this.tones.querySelectorAll<HTMLButtonElement>(
+            '[role="radio"]'
+        )[next]?.focus()
+    }
+
+    private reposition ():void {
+        if (!this.anchorElement) return
+        const anchor = this.anchorElement.getBoundingClientRect()
+        const pos = placePopover(
+            {
+                top:anchor.top,
+                left:anchor.left,
+                height:anchor.height,
+            },
+            {
+                width:this.panel.offsetWidth,
+                height:this.panel.offsetHeight,
+            },
+            {
+                width:window.innerWidth,
+                height:window.innerHeight,
+            },
+            4,
+        )
+        this.panel.style.top = `${pos.top}px`
+        this.panel.style.left = `${pos.left}px`
+    }
+
+    private onReposition = ():void => {
+        this.reposition()
+    }
+
+    private attachPositionListeners ():void {
+        window.addEventListener('resize', this.onReposition)
+        window.addEventListener(
+            'scroll', this.onReposition, true
+        )
+    }
+
+    private detachPositionListeners ():void {
+        window.removeEventListener(
+            'resize', this.onReposition
+        )
+        window.removeEventListener(
+            'scroll', this.onReposition, true
+        )
+    }
+
+    private onPanelToggle = (event:Event):void => {
+        const te = event as ToggleEvent
+        if (te.newState === 'closed') {
+            this.detachPositionListeners()
+            this.panel.hidden = true
+            this.opened = false
+            this.anchorElement = null
+            this.triggerElement = null
         }
     }
 }

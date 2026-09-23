@@ -48,14 +48,15 @@ export class EmojiButton extends Base {
         this.button!.addEventListener('click', this.onClick)
     }
 
-    private onClick = (ev:MouseEvent):void => {
-        ev.stopPropagation()
+    private onClick = ():void => {
         const forId = this.getAttribute('for')
         if (!forId) return
 
         const root = this.getRootNode() as Document
         const target = root.getElementById(forId)
-        if (target?.localName !== 'emoji-picker') return
+        if (!target
+            || typeof (target as any).open !== 'function'
+        ) return
 
         const picker = target as EmojiPicker
         picker.open(this)

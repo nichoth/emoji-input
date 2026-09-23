@@ -24,6 +24,7 @@
 
 import { DEFAULT_EMOJIS, type EmojiEntry } from './data.js'
 import { search } from './search.js'
+import { placePopover } from './placement.js'
 export { EmojiPicker } from './picker.js'
 export { EmojiButton } from './button.js'
 export { DEFAULT_EMOJIS, type EmojiEntry } from './data.js'
@@ -54,19 +55,46 @@ const MIRROR_PROPS = [
 
 interface CaretRect { top:number; left:number; height:number }
 
+const Base = typeof HTMLElement !== 'undefined' ?
+    HTMLElement :
+    class {} as unknown as typeof HTMLElement
+
 // ---------------------------------------------------------------------
 // Element
 // ---------------------------------------------------------------------
 
-export class EmojiInput extends HTMLElement {
+export class EmojiInput extends Base {
     static TAG = 'emoji-input'
 
     static define (tag = EmojiInput.TAG):void {
-        if (window && window.customElements) {
-            if (!customElements.get(tag)) {
-                customElements.define(tag, EmojiInput)
+        if (typeof window === 'undefined' || !window.customElements) return
+        if (!customElements.get(tag)) {
+            customElements.define(tag, EmojiInput)
+        }
+    }
+
+    constructor () {
+        super()
+        const defaults:{
+            emojis:EmojiEntry[];
+            minChars:number;
+            maxResults:number;
+        } = {
+            emojis:DEFAULT_EMOJIS,
+            minChars:2,
+            maxResults:8,
+        }
+        for (const prop of
+            ['emojis', 'minChars', 'maxResults'] as const
+        ) {
+            if (Object.prototype.hasOwnProperty.call(this, prop)) {
+                defaults[prop] = (this as any)[prop]
+                delete (this as any)[prop]
             }
         }
+        this.emojis = defaults.emojis
+        this.minChars = defaults.minChars
+        this.maxResults = defaults.maxResults
     }
 
     static render (uid:string):string {
@@ -101,12 +129,9 @@ export class EmojiInput extends HTMLElement {
         })
     }
 
-    /** Emoji dataset. Replace with a full list if you like. */
-    emojis:EmojiEntry[] = DEFAULT_EMOJIS
-    /** Characters after `:` before the popover opens. */
-    minChars = 2
-    /** Max rows to show. */
-    maxResults = 8
+    declare emojis:EmojiEntry[]
+    declare minChars:number
+    declare maxResults:number
 
     private field:Field|null = null
     private list!:HTMLElement
@@ -121,9 +146,19 @@ export class EmojiInput extends HTMLElement {
     connectedCallback ():void {
         const root = this.getRootNode() as Document|ShadowRoot
         if (!this.list) {
-            const wrapper = document.createElement('div')
-            wrapper.innerHTML = EmojiInput.render(this.uid)
-            this.list = wrapper.firstElementChild as HTMLElement
+            const existing = this.querySelector<HTMLElement>(
+                '.emoji-search-list'
+            )
+            if (existing) {
+                this.list = existing
+                this.uid = existing.id.replace(/-list$/, '')
+                    || this.uid
+            } else {
+                const wrapper = document.createElement('div')
+                wrapper.innerHTML = EmojiInput.render(this.uid)
+                this.list = wrapper
+                    .firstElementChild as HTMLElement
+            }
             this.hydrate()
         }
         if (!this.list.isConnected) this.append(this.list)
@@ -161,8 +196,9 @@ export class EmojiInput extends HTMLElement {
 
     detach ():void {
         if (!this.field) return
-        this.close()
         const f = this.field
+        this.close()
+        f.removeAttribute('aria-autocomplete')
         f.removeEventListener('input', this.onInput);
         (f as HTMLElement).removeEventListener('keydown', this.onKeydown)
         f.removeEventListener('blur', this.close)
@@ -222,6 +258,7 @@ export class EmojiInput extends HTMLElement {
 
     private onKeydown = (ev:KeyboardEvent):void => {
         if (!this.isOpen) return
+        if (ev.isComposing || ev.keyCode === 229) return
         switch (ev.key) {
             case 'ArrowDown':
                 ev.preventDefault()
@@ -340,18 +377,17 @@ export class EmojiInput extends HTMLElement {
         if (!f || !this.isOpen || !this.range) return
         const caret = caretRect(f, this.range.start)
         const box = this.list.getBoundingClientRect()
-        const gap = 4
-        const vw = document.documentElement.clientWidth
-        const vh = document.documentElement.clientHeight
-
-        let left = caret.left
-        let top = caret.top + caret.height + gap
-        if (left + box.width > vw - gap) left = Math.max(gap, vw - box.width - gap)
-        if (top + box.height > vh - gap) {
-            top = Math.max(gap, caret.top - box.height - gap)
-        }
-        this.list.style.left = `${Math.round(left)}px`
-        this.list.style.top = `${Math.round(top)}px`
+        const pos = placePopover(
+            caret,
+            { width:box.width, height:box.height },
+            {
+                width:document.documentElement.clientWidth,
+                height:document.documentElement.clientHeight,
+            },
+            4,
+        )
+        this.list.style.left = `${Math.round(pos.left)}px`
+        this.list.style.top = `${Math.round(pos.top)}px`
     }
 }
 

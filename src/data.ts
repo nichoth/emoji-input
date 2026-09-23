@@ -1,4 +1,4 @@
-import emojiData from '@emoji-mart/data/sets/15/native.json'
+import emojiData from '@emoji-mart/data/sets/15/native.json' with { type:'json' }
 
 type EmojiMartSkin = {
     readonly unified:string;

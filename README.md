@@ -1,10 +1,10 @@
 # emoji input
 [![tests](https://img.shields.io/github/actions/workflow/status/nichoth/emoji-input/nodejs.yml?style=flat-square)](https://github.com/nichoth/emoji-input/actions/workflows/nodejs.yml)
-[![types](https://img.shields.io/npm/types/@substrate-system/icons?style=flat-square)](README.md)
+[![types](https://img.shields.io/npm/types/@substrate-system/emoji-input?style=flat-square)](README.md)
 [![module](https://img.shields.io/badge/module-ESM%2FCJS-blue?style=flat-square)](README.md)
 [![semantic versioning](https://img.shields.io/badge/semver-2.0.0-blue?logo=semver&style=flat-square)](https://semver.org/)
 [![Common Changelog](https://nichoth.github.io/badge/common-changelog.svg)](./CHANGELOG.md)
-[![install size](https://flat.badgen.net/packagephobia/install/@nichoth/session-cookie)](https://packagephobia.com/result?p=@nichoth/session-cookie)
+[![install size](https://flat.badgen.net/packagephobia/install/@substrate-system/emoji-input)](https://packagephobia.com/result?p=@substrate-system/emoji-input)
 [![gzip size](https://flat.badgen.net/bundlephobia/minzip/@substrate-system/emoji-input)](https://bundlephobia.com/package/@substrate-system/emoji-input)
 [![dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen.svg?style=flat-square)](package.json)
 [![license](https://img.shields.io/badge/license-Big_Time-blue?style=flat-square)](LICENSE)
@@ -35,12 +35,13 @@ programmatically.
 
 - [Install](#install)
 - [Example](#example)
-  * [JS](#js)
+  * [Emoji Picker Component](#emoji-picker-component)
 - [Modules](#modules)
   * [ESM](#esm)
   * [Common JS](#common-js)
 - [CSS](#css)
-  * [Import CSS](#import-css)
+  * [All components](#all-components)
+  * [Per component](#per-component)
   * [Customize CSS via some variables](#customize-css-via-some-variables)
   * [pre-built JS](#pre-built-js)
 
@@ -112,7 +113,10 @@ require('@substrate-system/emoji-input')
 
 ## CSS
 
-### Import CSS
+Styles ship as separate CSS files. Import all three component
+stylesheets at once, or pick only the ones you need.
+
+### All components
 
 ```js
 import '@substrate-system/emoji-input/css'
@@ -123,6 +127,19 @@ Or minified:
 ```js
 import '@substrate-system/emoji-input/css/min'
 ```
+
+### Per component
+
+```js
+import '@substrate-system/emoji-input/index.css'
+import '@substrate-system/emoji-input/picker.css'
+import '@substrate-system/emoji-input/button.css'
+```
+
+### Customize CSS via some variables
+
+See the component CSS files for the full list of custom properties.
+Picker tokens use the `--emoji-picker-*` namespace.
 
 ### pre-built JS
 
