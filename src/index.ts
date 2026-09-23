@@ -27,13 +27,12 @@ import { search } from './search.js'
 export { EmojiPicker } from './picker.js'
 export { EmojiButton } from './button.js'
 export { DEFAULT_EMOJIS, type EmojiEntry } from './data.js'
-
 export type EmojiSelectDetail = {
     emoji:EmojiEntry;
     query:string;
 }
-type Field = HTMLTextAreaElement|HTMLInputElement
 
+type Field = HTMLTextAreaElement|HTMLInputElement
 const TRIGGER = /:([a-z0-9_+-]*)$/i
 
 // ---------------------------------------------------------------------
@@ -55,55 +54,18 @@ const MIRROR_PROPS = [
 
 interface CaretRect { top:number; left:number; height:number }
 
-function caretRect (field:Field, pos:number):CaretRect {
-    const isTextarea = field instanceof HTMLTextAreaElement
-    const cs = getComputedStyle(field)
-    const mirror = document.createElement('div')
-    const s = mirror.style
-
-    for (const p of MIRROR_PROPS) {
-        s[p] = cs[p]
-    }
-    s.position = 'absolute'
-    s.visibility = 'hidden'
-    s.top = '0'
-    s.left = '-9999px'
-    s.overflow = 'hidden'
-    s.whiteSpace = isTextarea ? 'pre-wrap' : 'pre'
-    if (isTextarea) s.wordWrap = 'break-word'
-
-    const before = field.value.slice(0, pos)
-    mirror.textContent = isTextarea ? before : before.replace(/\s/g, '\u00a0')
-
-    const marker = document.createElement('span')
-    marker.textContent = field.value.slice(pos) || '.'
-    mirror.appendChild(marker)
-    document.body.appendChild(mirror)
-
-    const rect = field.getBoundingClientRect()
-    const borderTop = parseFloat(cs.borderTopWidth) || 0
-    const borderLeft = parseFloat(cs.borderLeftWidth) || 0
-    const lineHeight = parseFloat(cs.lineHeight) || marker.offsetHeight
-
-    const out = {
-        top:rect.top + borderTop + marker.offsetTop - field.scrollTop,
-        left:rect.left + borderLeft + marker.offsetLeft - field.scrollLeft,
-        height:lineHeight,
-    }
-    mirror.remove()
-    return out
-}
-
 // ---------------------------------------------------------------------
 // Element
 // ---------------------------------------------------------------------
 
 export class EmojiInput extends HTMLElement {
-    static TAG = 'emoi-input'
+    static TAG = 'emoji-input'
 
     static define (tag = EmojiInput.TAG):void {
-        if (!customElements.get(tag)) {
-            customElements.define(tag, EmojiInput)
+        if (window && window.customElements) {
+            if (!customElements.get(tag)) {
+                customElements.define(tag, EmojiInput)
+            }
         }
     }
 
@@ -401,4 +363,43 @@ declare global {
     interface HTMLElementEventMap {
         'emoji-select':CustomEvent<EmojiSelectDetail>;
     }
+}
+
+function caretRect (field:Field, pos:number):CaretRect {
+    const isTextarea = field instanceof HTMLTextAreaElement
+    const cs = getComputedStyle(field)
+    const mirror = document.createElement('div')
+    const s = mirror.style
+
+    for (const p of MIRROR_PROPS) {
+        s[p] = cs[p]
+    }
+    s.position = 'absolute'
+    s.visibility = 'hidden'
+    s.top = '0'
+    s.left = '-9999px'
+    s.overflow = 'hidden'
+    s.whiteSpace = isTextarea ? 'pre-wrap' : 'pre'
+    if (isTextarea) s.wordWrap = 'break-word'
+
+    const before = field.value.slice(0, pos)
+    mirror.textContent = isTextarea ? before : before.replace(/\s/g, '\u00a0')
+
+    const marker = document.createElement('span')
+    marker.textContent = field.value.slice(pos) || '.'
+    mirror.appendChild(marker)
+    document.body.appendChild(mirror)
+
+    const rect = field.getBoundingClientRect()
+    const borderTop = parseFloat(cs.borderTopWidth) || 0
+    const borderLeft = parseFloat(cs.borderLeftWidth) || 0
+    const lineHeight = parseFloat(cs.lineHeight) || marker.offsetHeight
+
+    const out = {
+        top:rect.top + borderTop + marker.offsetTop - field.scrollTop,
+        left:rect.left + borderLeft + marker.offsetLeft - field.scrollLeft,
+        height:lineHeight,
+    }
+    mirror.remove()
+    return out
 }
