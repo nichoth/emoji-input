@@ -8,19 +8,19 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./css": "./dist/emoji-input.css",
+    "./css/min": "./dist/emoji-input.min.css",
     "./picker": {
       "import": "./dist/picker.js",
       "require": "./dist/picker.cjs"
     },
+    "./picker/css": "./dist/picker.css",
     "./button": {
       "import": "./dist/button.js",
       "require": "./dist/button.cjs"
     },
-    "./index.css": "./dist/index.css",
-    "./picker.css": "./dist/picker.css",
-    "./button.css": "./dist/button.css",
-    "./css": "./dist/emoji-input.css",
-    "./css/min": "./dist/emoji-input.min.css",
+    "./button/css": "./dist/button.css",
+    "./index/css": "./dist/index.css",
     "./*": {
       "import": [
         "./dist/*.js",
