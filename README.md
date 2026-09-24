@@ -35,6 +35,7 @@ programmatically.
 
 - [Install](#install)
 - [Example](#example)
+  * [Text Helper](#text-helper)
   * [Emoji Picker Component](#emoji-picker-component)
 - [Modules](#modules)
   * [ESM](#esm)
@@ -42,7 +43,7 @@ programmatically.
 - [CSS](#css)
   * [All components](#all-components)
   * [Per component](#per-component)
-  * [Customize CSS via some variables](#customize-css-via-some-variables)
+  * [CSS Variables](#css-variables)
   * [pre-built JS](#pre-built-js)
 
 <!-- tocstop -->
@@ -56,6 +57,8 @@ npm i -S @substrate-system/emoji-input
 ```
 
 ## Example
+
+### Text Helper
 
 Use this with a `textarea` or `input` as a child, or give it a `for` attribute
 equal to the `id` attribute of a `textarea` or `input`.
@@ -136,10 +139,80 @@ import '@substrate-system/emoji-input/picker.css'
 import '@substrate-system/emoji-input/button.css'
 ```
 
-### Customize CSS via some variables
+### CSS Variables
 
-See the component CSS files for the full list of custom properties.
-Picker tokens use the `--emoji-picker-*` namespace.
+Every component reads its colors, sizes, and fonts from CSS custom
+properties. Set them on the element or any ancestor.
+Each variable has a default, so you only need to set the ones
+you want to change.
+
+```css
+emoji-picker {
+    --emoji-picker-bg: #1e1e1e;
+    --emoji-picker-fg: #eee;
+    --emoji-picker-border: #444;
+}
+```
+
+#### Autocomplete (`index.css`)
+
+These style the suggestion list that `<emoji-input>` shows while you type
+a `:shortcode`.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `--emoji-search-padding` | `4px` | Padding inside the list |
+| `--emoji-search-min-width` | `220px` | Minimum width of the list |
+| `--emoji-search-max-width` | `320px` | Maximum width of the list |
+| `--emoji-search-border` | `#d0d0d0` | Border color of the list |
+| `--emoji-search-radius` | `8px` | Corner radius of the list |
+| `--emoji-search-bg` | `#fff` | Background color of the list |
+| `--emoji-search-fg` | `#111` | Text color of the list |
+| `--emoji-search-shadow` | `0 8px 24px rgb(0 0 0 / 18%)` | Box shadow |
+| `--emoji-search-font` | `14px/1.3 system-ui, sans-serif` | `font` shorthand |
+| `--emoji-search-item-radius` | `5px` | Corner radius of each item |
+| `--emoji-search-active-bg` | `#e8e8e8` | Background of the active item |
+| `--emoji-search-active-fg` | `inherit` | Text color of the active item |
+| `--emoji-search-match` | `inherit` | Color of the matched text |
+
+#### Picker (`picker.css`)
+
+These style the `<emoji-picker>` panel, in both popover and `inline` mode.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `--emoji-picker-width` | `320px` | Width of the panel |
+| `--emoji-picker-padding` | `8px` | Padding inside the panel |
+| `--emoji-picker-border` | `#d0d0d0` | Border color of the panel |
+| `--emoji-picker-bg` | `#fff` | Background color of the panel |
+| `--emoji-picker-fg` | `#111` | Text color of the panel |
+| `--emoji-picker-shadow` | `0 8px 24px rgb(0 0 0 / 18%)` | Box shadow |
+| `--emoji-picker-font` | `14px/1.3 system-ui, sans-serif` | `font` shorthand |
+| `--emoji-picker-tab-color` | `#666` | Text color of category tabs |
+| `--emoji-picker-tab-active-bg` | `#e8e8e8` | Background of the selected tab |
+| `--emoji-picker-tab-active-color` | `#111` | Text color of the selected tab |
+| `--emoji-picker-grid-height` | `300px` | Max height of the grid before it scrolls |
+| `--emoji-picker-grid-gap` | `2px` | Gap between emoji in the grid |
+| `--emoji-picker-search-border` | `#d0d0d0` | Border color of the search box |
+| `--emoji-picker-search-bg` | `#fff` | Background of the search box |
+| `--emoji-picker-search-fg` | `#111` | Text color of the search box |
+| `--emoji-picker-tone-font` | `18px/1.2 sans-serif` | `font` shorthand for skin tone buttons |
+| `--emoji-picker-tone-active-bg` | `--emoji-picker-tab-active-bg` | Background of the selected skin tone |
+| `--emoji-picker-emoji-font` | `24px/1.2 sans-serif` | `font` shorthand for emoji in the grid |
+| `--emoji-picker-hover-bg` | `#e8e8e8` | Background of a hovered or focused emoji |
+| `--emoji-picker-muted` | `#666` | Text color of the "no results" message |
+| `--emoji-picker-preview-border` | `transparent` | Top border of the preview row |
+| `--emoji-picker-preview-fg` | `inherit` | Text color of the preview row |
+| `--emoji-picker-preview-glyph-font` | `28px/1.2 sans-serif` | `font` shorthand for the preview emoji |
+
+#### Button (`button.css`)
+
+These style the `<emoji-button>` that opens a picker.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `--emoji-button-color` | `currentColor` | Color of the button icon |
+| `--emoji-button-size` | `24px` | Width and height of the button and icon |
 
 ### pre-built JS
 
