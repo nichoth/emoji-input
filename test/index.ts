@@ -202,10 +202,7 @@ test('emoji-button custom element renders an accessible smiley button', t => {
     t.ok(inner, 'renders a native button')
     t.equal(inner?.type, 'button', 'button does not submit forms')
     t.ok(inner?.querySelector('svg'), 'renders the smiley SVG inline')
-    t.ok(
-        inner?.querySelector('.visually-hidden'),
-        'has a visually-hidden label'
-    )
+    t.ok(inner?.querySelector('.visually-hidden'), 'has a visually-hidden label')
     button.remove()
 })
 
@@ -2687,6 +2684,11 @@ test('disconnectedCallback cleans up', t => {
     el.remove()
     simulateInput(textarea, ':cat')
     t.ok(!el.isOpen, 'no trigger after disconnect')
+})
+
+test('all done', () => {
+    // @ts-expect-error tests
+    window.testsFinished = true
 })
 
 function setup (emojis?:EmojiEntry[]):{

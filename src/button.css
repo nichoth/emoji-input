@@ -10,6 +10,9 @@ emoji-button {
         font: inherit;
         width: var(--emoji-button-size, 24px);
         height: var(--emoji-button-size, 24px);
+        background-color: transparent;
+        border-radius: 50%;
+        border: none;
 
         & svg {
             min-width: var(--emoji-button-size, 24px);
@@ -20,13 +23,4 @@ emoji-button {
             cursor: default;
         }
     }
-}
-
-.visually-hidden:not(:focus, :active) {
-    clip-path: inset(100%);
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    width: 1px;
 }

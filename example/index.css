@@ -1,3 +1,4 @@
+@import url("@substrate-system/a11y");
 @import url("@substrate-system/css-normalize");
 
 .example {
@@ -12,21 +13,23 @@
     }
 }
 
-button {
-    cursor: pointer;
-    transition: all 0.2s;
-    transform: translate(0, 0);
-    border-radius: 50%;
-    padding: 1rem;
-    border: 1px solid #8080805e;
-    background-color: transparent;
+emoji-button {
+    & button {
+        cursor: pointer;
+        transition: all 0.2s;
+        transform: translate(0, 0);
+        border-radius: 50%;
+        padding: 1rem;
+        border: 1px solid #8080805e;
+        background-color: transparent;
 
-    &:hover, &:focus-visible {
-        transform: translate(-1px, -1px);
-        background-color: #cfff;
-    }
+        &:hover, &:focus-visible {
+            transform: translate(-1px, -1px);
+            background-color: #cfff;
+        }
 
-    &:active {
-        transform: translate(1px, 1px);
+        &:active {
+            transform: translate(1px, 1px);
+        }
     }
 }

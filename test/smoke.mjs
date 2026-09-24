@@ -89,86 +89,72 @@ await test(
 
 // -- CSS export paths --
 
-await test(
-    'CSS files named in exports exist after build',
-    async () => {
-        const pkg = JSON.parse(
-            (await import('node:fs'))
-                .readFileSync(resolve(root, 'package.json'), 'utf8'),
+await test('CSS files named in exports exist after build', async () => {
+    const pkg = JSON.parse(
+        (await import('node:fs'))
+            .readFileSync(resolve(root, 'package.json'), 'utf8'),
+    )
+    const cssEntries = [
+        './index/css',
+        './picker/css',
+        './button/css',
+        './css',
+        './css/min',
+    ]
+    for (const key of cssEntries) {
+        const entry = pkg.exports[key]
+        assert.ok(entry, `exports["${key}"] missing`)
+        const target = typeof entry === 'string' ?
+            entry :
+            entry.default || entry.import
+        assert.ok(target, `no target for exports["${key}"]`)
+        const full = resolve(root, target)
+        assert.ok(
+            existsSync(full),
+            `${target} does not exist`,
         )
-        const cssEntries = [
-            './index.css',
-            './picker.css',
-            './button.css',
-            './css',
-            './css/min',
-        ]
-        for (const key of cssEntries) {
-            const entry = pkg.exports[key]
-            assert.ok(entry, `exports["${key}"] missing`)
-            const target = typeof entry === 'string' ?
-                entry :
-                entry.default || entry.import
-            assert.ok(target, `no target for exports["${key}"]`)
-            const full = resolve(root, target)
-            assert.ok(
-                existsSync(full),
-                `${target} does not exist`,
-            )
-        }
-    },
-)
+    }
+})
 
 await test(
     'CSS subpaths resolve via import.meta.resolve',
     async () => {
         const cssSubpaths = [
-            '@substrate-system/emoji-input/index.css',
-            '@substrate-system/emoji-input/picker.css',
-            '@substrate-system/emoji-input/button.css',
+            '@substrate-system/emoji-input/index/css',
+            '@substrate-system/emoji-input/picker/css',
+            '@substrate-system/emoji-input/button/css',
             '@substrate-system/emoji-input/css',
             '@substrate-system/emoji-input/css/min',
         ]
         for (const specifier of cssSubpaths) {
             const resolved = import.meta.resolve(specifier)
-            assert.ok(
-                resolved,
-                `import.meta.resolve("${specifier}") failed`,
-            )
+            assert.ok(resolved, `import.meta.resolve("${specifier}") failed`)
             const path = fileURLToPath(resolved)
-            assert.ok(
-                existsSync(path),
-                `${specifier} resolved to ${path} which does not exist`,
-            )
+            assert.ok(existsSync(path),
+                `${specifier} resolved to ${path} which does not exist`)
         }
     },
 )
 
 // -- Export shape --
 
-await test(
-    'main entry exports EmojiInput, EmojiPicker, EmojiButton',
-    async () => {
-        const mod = await import(
-            resolve(root, 'dist/index.js')
-        )
-        assert.ok('EmojiInput' in mod)
-        assert.ok('EmojiPicker' in mod)
-        assert.ok('EmojiButton' in mod)
-    },
-)
+await test('main entry exports EmojiInput, EmojiPicker, EmojiButton', async () => {
+    const mod = await import(
+        resolve(root, 'dist/index.js')
+    )
+    assert.ok('EmojiInput' in mod)
+    assert.ok('EmojiPicker' in mod)
+    assert.ok('EmojiButton' in mod)
+})
 
-await test(
-    '/button subpath exports only EmojiButton',
-    async () => {
-        const mod = await import(
-            resolve(root, 'dist/button.js')
-        )
-        assert.ok('EmojiButton' in mod)
-        assert.ok(!('EmojiInput' in mod))
-        assert.ok(!('EmojiPicker' in mod))
-    },
-)
+await test('/button subpath exports only EmojiButton', async () => {
+    const mod = await import(
+        resolve(root, 'dist/button.js')
+    )
+    assert.ok('EmojiButton' in mod)
+    assert.ok(!('EmojiInput' in mod))
+    assert.ok(!('EmojiPicker' in mod))
+})
 
 console.log(`\n1..${passed + failed}`)
 console.log(`# pass ${passed}`)
