@@ -1,6 +1,6 @@
 {
   "name": "@substrate-system/emoji-input",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Inputs for emojis",
   "type": "module",
   "exports": {
