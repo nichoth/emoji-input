@@ -21,6 +21,7 @@
     },
     "./button/css": "./dist/button.css",
     "./index/css": "./dist/index.css",
+    "./package.json": "./package.json",
     "./*": {
       "import": [
         "./dist/*.js",

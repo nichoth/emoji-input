@@ -136,6 +136,14 @@ await test(
     },
 )
 
+await test('package.json is exported', async () => {
+    const specifier = '@substrate-system/emoji-input/package.json'
+    const resolved = fileURLToPath(import.meta.resolve(specifier))
+    assert.equal(resolved, resolve(root, 'package.json'))
+    const pkg = require(specifier)
+    assert.equal(pkg.name, '@substrate-system/emoji-input')
+})
+
 // -- Export shape --
 
 await test('main entry exports EmojiInput, EmojiPicker, EmojiButton', async () => {
